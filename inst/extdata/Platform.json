@@ -1,0 +1,19 @@
+{
+  "name":"Platform",
+  "description": "Container for a description of a physical platform, such as a consumable device (e.g., Affymetrix Human Gene 2.0 ST), an instrument model (e.g., Illumina NextSeq 500), or a kit (e.g., an ABI TaqMan assay)",
+  "variables": {
+    "name": {
+      "name": "Platform name (e.g., 'Human Gene 2.0 ST', 'NextSeq 500')",
+      "category": "key",
+      "type": "T"
+    },
+    "manufacturer": {
+      "name": "The name of the manufacturer (e.g., 'Affymetrix', 'Illumina', 'ABI')",
+      "type":"T"
+    },
+    "partNumber": {
+      "name": "Part (catalog) number of the platform",
+      "type":"T"
+    }
+  }
+}

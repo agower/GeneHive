@@ -1,0 +1,15 @@
+{
+  "name": "Mirror",
+  "description": "Container for a WorkFile retrieved from a specific URL",
+  "variables": {
+    "url": {
+      "name": "The URL that is being mirrored",
+      "category": "key",
+      "type": "T"
+    },
+    "workFile": {
+      "name": "ID of a WorkFile retrieved from the URL in the 'url' field",
+      "type": "W"
+    }
+  }
+}

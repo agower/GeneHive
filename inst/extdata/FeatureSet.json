@@ -1,0 +1,30 @@
+{
+  "name":"FeatureSet",
+  "description": "Container for an unweighted set of features (e.g., a gene set)",
+  "variables": {
+    "name": {
+      "name": "Descriptive name for the record (e.g., 'KEGG_CELL_CYCLE')",
+      "category": "label",
+      "type": "T"
+    },
+    "description": {
+      "name": "Optional, longer description of or comments about record",
+      "type": "T"
+    },
+    "features": {
+      "name": "Feature identifiers (e.g., Entrez Gene IDs, Affymetrix probeset IDs)",
+      "category": "key",
+      "type": "T",
+      "is_array": true
+    },
+    "featureSpace": {
+      "name": "UUID indicating the FeatureSpace record corresponding to the values in 'features'",
+      "type": "E",
+      "entity_class_name": "FeatureSpace"
+    },
+    "species": {
+      "name":"Scientific name of the species associated with the record, e.g., 'Homo sapiens'",
+      "type":"T"
+    }
+  }
+}

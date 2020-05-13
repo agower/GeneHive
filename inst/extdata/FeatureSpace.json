@@ -1,0 +1,17 @@
+{
+  "name":"FeatureSpace",
+  "description": "Container for either a set of features or a regular expression that define a feature space (e.g., Entrez Gene IDs, Affymetrix probeset IDs for a specific platform, etc.)",
+  "variables": {
+    "name": {
+      "name": "Descriptive name for the record (e.g., 'Entrez Gene')",
+      "category": "label",
+      "type": "T"
+    },
+    "values": {
+      "name": "A character array containing two or more features over which the space is defined, or a single regular expression that matches all features in the space",
+      "category": "key",
+      "type": "T",
+      "is_array": true
+    }
+  }
+}

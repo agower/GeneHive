@@ -1,0 +1,38 @@
+Package: GeneHive
+Title: R interface to a GeneHive
+Version: 0.9-0
+Author: Adam Gower <agower@bu.edu>
+Maintainer: Adam Gower <agower@bu.edu>
+Authors@R: c(person("Adam", "Gower", email = "agower@bu.edu", role = c("aut", "cre")))
+Description: Provides R functions for accessing and manipulating data in a GeneHive.
+Depends: R (>= 3.3.0)
+Imports: bitops, digest, filenamer, io, methods, RCurl, rjson, R.utils, tools, S4Vectors (>= 0.10.3), utils, uuidtools, XML
+Collate:
+    classes.R
+    bitwiseParity.R
+    hiveUtilities.R
+    hiveSlots.R
+    methods.R
+    buildQueryString.R
+    isJSON.R
+    hiveURL.R
+    httpRequest.R
+    stopIfHiveError.R
+    hiveProcessing.R
+    EntityS4Class.R
+    hiveBase.R
+    Passwords.R
+    WorkFiles.R
+    EntityClasses.R
+    belongsToFeatureSpace.R
+    FeatureSets.R
+    WeightedFeatureSets.R
+    importPublication.R
+    Users.R
+    Groups.R
+    WorkFileProperties.R
+    Entities.R
+    hooks.R
+License: LGPL (>= 3) + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.1.0

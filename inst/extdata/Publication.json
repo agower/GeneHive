@@ -1,0 +1,41 @@
+{
+  "name": "Publication",
+  "description": "Container for a set of WorkFile identifiers and associated metadata that correspond to a publication",
+  "variables": {
+    "title": {
+      "name": "The title of the publication",
+      "category": "label",
+      "type": "T"
+    },
+    "abstract": {
+      "name": "The abstract of the publication",
+      "type": "T"
+    },
+    "authors": {
+      "name": "Name(s) of author(s)",
+      "type": "T",
+      "is_array": true
+    },
+    "journal": {
+      "name": "Name of journal",
+      "type": "T"
+    },
+    "year": {
+      "name": "Year of publication",
+      "type": "I"
+    },
+    "workFiles": {
+      "name": "ID(s) of any WorkFile(s) containing the paper, supplementary data, etc.",
+      "type": "W",
+      "is_array": true
+    },
+    "PMID": {
+      "name": "PubMed IDentifier associated with the Publication",
+      "type": "I"
+    },
+    "DOI": {
+      "name": "Digital Object Identifier associated with the Publication",
+      "type": "T"
+    }
+  }
+}

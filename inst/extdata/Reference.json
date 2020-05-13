@@ -1,0 +1,25 @@
+{
+  "name":"Reference",
+  "description": "Container for a WorkFile representing a reference (e.g., a genome)",
+  "variables": {
+    "name": {
+      "name": "Descriptive name, e.g., 'hg19', 'RefSeq build N'",
+      "category": "label",
+      "type": "T"
+    },
+    "description": {
+      "name": "Optional, longer description of or comments about record",
+      "type": "T"
+    },
+    "workFiles": {
+      "name": "ID(s) of the WorkFile(s) containing the reference (e.g., a 2bit genome file or a collection of FASTA files)",
+      "category": "key",
+      "type": "W",
+      "is_array": true
+    },
+    "species": {
+      "name":"Scientific name of the species associated with the Reference, e.g., 'Homo sapiens'",
+      "type":"T"
+    }
+  }
+}

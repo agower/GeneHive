@@ -1,0 +1,20 @@
+{
+  "name": "EntityAnnotation",
+  "description": "Container for a WorkFile containing annotation (e.g., clinical, phenotypic) for an Entity",
+  "variables": {
+    "workFile": {
+      "name": "ID of the WorkFile containing the annotation",
+      "category": "key",
+      "type": "W"
+    },
+    "timestamp": {
+      "name": "Timestamp of the annotation (may be different from creation date of WorkFile)",
+      "type": "T"
+    },
+    "description": {
+      "name": "Description of the annotation and any salient changes/updates",
+      "category": "label",
+      "type": "T"
+    }
+  }
+}

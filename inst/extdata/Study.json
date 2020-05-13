@@ -1,0 +1,20 @@
+{
+  "name": "Study",
+  "description": "Container for a set of Entity records associated with a given study",
+  "variables": {
+    "name": {
+      "name": "Descriptive name for the Study",
+      "category": "label",
+      "type": "T"
+    },
+    "description": {
+      "name": "Optional, longer description of or comments about Study",
+      "type": "T"
+    },
+    "ids": {
+      "name": "ID(s) of any Entities associated with the Study (including primary data (i.e., processed datasets), results (e.g., weighted feature sets), Publications or other Studies)",
+      "type": "V",
+      "is_array": true
+    }
+  }
+}
