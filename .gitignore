@@ -34,3 +34,12 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+
+# Object files
+/src/*.o
+/src/*.so
+/src/*.dll
+
+# Multi-architecture build files
+/src-i386/
+/src-x64/
