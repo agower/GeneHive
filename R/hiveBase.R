@@ -693,6 +693,16 @@ hiveList <- function (
 
   # Submit a GET request and stop if an error is returned
   if (type == "Entity") {
+    # When hiveList() is called with type "Entity" and any UUID parameters
+    # (i.e., to list only those Entities that refer to a given Entity), the
+    # suffix ".id" must be added to the name of each UUID parameter.
+    # For example, if FeatureSet Entities have a field 'featureSpace' that
+    # holds the UUID of a FeatureSpace, a query for FeatureSets matching
+    # FeatureSpace xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx would include:
+    #   .class = "FeatureSet"
+    #   featureSpace.id = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    i <- which(sapply(parameters, is, "UUID"))
+    names(parameters)[i] <- paste0(names(parameters)[i], ".id")
     response <- stopIfHiveError(
       httpRequest(
         url=hiveURL("EntityQuery", "All", query=hivePreprocess(parameters)),
