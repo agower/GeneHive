@@ -206,7 +206,13 @@ randomPassword <- function (nchars=20)
 
   if (file.exists("/dev/urandom")) {
     # If available, extract a random string of 8-bit integers from /dev/urandom
-    i <- as.numeric(readBin("/dev/urandom", what="raw", n=nchars))
+    # Note: file() is called with raw=TRUE because /dev/urandom is a device,
+    #       not a regular file; otherwise, a warning is thrown
+    i <- as.numeric(
+      readBin(
+        con=file("/dev/urandom", open="rb", raw=TRUE), what="raw", n=nchars
+      )
+    )
   } else {
     # Otherwise, use the system RNG
     i <- sample(0:255, size=nchars, replace=TRUE)

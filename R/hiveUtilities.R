@@ -79,16 +79,20 @@ hiveExists <- function (
   if (missing(id)) stop("Argument 'id' is required")
   type <- match.arg(type)
   if (!(is.character(id) && length(id) == 1)) {
-    if ((type == "Entity") && !is(id, "UUID")) {
-      stop(
-        "When type == ", sQuote(type), ", ",
-        "argument 'id' must be a character vector of length 1 or a UUID"
-      )
-    } else if ((type == "WorkFileProperties") && !is(id, "WorkFileID")) {
-      stop(
-        "When type == ", sQuote(type), ", ",
-        "argument 'id' must be a character vector of length 1 or a WorkFileID"
-      )
+    if (type == "Entity") {
+      if (!is(id, "UUID")) {
+        stop(
+          "When type == ", sQuote(type), ", ",
+          "argument 'id' must be a character vector of length 1 or a UUID"
+        )
+      }
+    } else if (type == "WorkFileProperties") {
+      if (!is(id, "WorkFileID")) {
+        stop(
+          "When type == ", sQuote(type), ", ",
+          "argument 'id' must be a character vector of length 1 or a WorkFileID"
+        )
+      }
     } else {
       stop(
         "When type == ", sQuote(type), ", ",
