@@ -24,7 +24,9 @@ stopIfHiveError <- function (x)
       http.status <- x$message[1]
       http.response <- x$message[2]
       # Process the response body if it is JSON code
-      if (isJSON(http.response)) http.response <- fromJSON(http.response)
+      http.response <- tryCatch(
+        fromJSON(http.response), error = function (x) http.response
+      )
       # The hive may return a list of one element, named 'error',
       # if there is an HTTP error
       if (is.list(http.response)) {

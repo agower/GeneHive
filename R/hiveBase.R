@@ -59,7 +59,8 @@
 #'     If the operation is successful, an S4 object is returned.
 #'   }
 #'   \item{\code{hiveDelete}}{
-#'     A logical value is returned stating whether the operation was successful.
+#'     A logical value is invisibly returned stating whether the operation was
+#'     successful.
 #'   }
 #'   \item{\code{hiveList}}{
 #'     \describe{
@@ -113,10 +114,8 @@ hiveAdd <- function (
   #       all of which are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      paste(
-        "All arguments in '...' must be named,",
-        "and these names must correspond to valid", Class, "object slots"
-      )
+      "All arguments in '...' must be named, ",
+      "and these names must correspond to valid ", Class, " object slots"
     )
   }
   # Coerce all fields corresponding to S4 object slots to the appropriate class
@@ -189,10 +188,8 @@ hiveAdd <- function (
         # If updates were specified, terminate with an error message
         if (length(updates)) {
           stop(
-            paste(
-              "Use hiveUpdate() to update fields:",
-              paste(sQuote(names(updates)), collapse=", ")
-            )
+            "Use hiveUpdate() to update fields: ",
+            paste(sQuote(names(updates)), collapse=", ")
           )
         }
       }
@@ -223,16 +220,11 @@ hiveAdd <- function (
     result <- hivePostprocess(response, type)
     if (verbose) {
       if (type == "Entity") {
-        cat(
-          fields$.class, "record", as.character(objectId(result)),
-          "was successfully created.\n"
-        )
+        cat(fields$.class, "record", as.character(objectId(result)))
       } else {
-        cat(
-          type, "record", sQuote(objectId(result)),
-          "was successfully created.\n"
-        )
+        cat(type, "record", sQuote(objectId(result)))
       }
+      cat(" was successfully created.\n")
     }
   }
   invisible(result)
@@ -262,21 +254,25 @@ hiveDelete <- function (
   id.slot <- hiveSlotName(Class, "id")
   if (length(fields[[id.slot]]) == 0) {
     stop(
-      paste(
-        "The", sQuote(id.slot), "argument is required to delete a",
-        type, "record"
-      )
+      "The ", sQuote(id.slot), " argument is required to delete a ",
+      type, " record"
     )
   } else {
-    # Check to see if the record exists in the hive; if not, exit with an error
-    object <- try(
-      do.call("hiveGet", c(type=type, fields[id.slot], con=con)), silent=TRUE
-    )
-    if (inherits(object, "try-error")) {
+    # Get the record if it exists; if it does not exist, exit with an error
+    if (type == "Group") {
+      object <- hiveGroup(name=fields[[id.slot]])
+      object.exists <- objectId(object) %in% hiveList("Group", con=con)
+    } else {
+      object <- try(
+        do.call("hiveGet", c(type=type, fields[id.slot], con=con)), silent=TRUE
+      )
+      object.exists <- !inherits(object, "try-error")
+    }
+    if (!object.exists) {
       if (type == "Entity") {
-        stop(paste(type, "record", fields[[id.slot]], "does not exist"))
+        stop(type, " record ", fields[[id.slot]], " does not exist")
       } else {
-        stop(paste(type, "record", sQuote(fields[[id.slot]]), "does not exist"))
+        stop(type, " record ", sQuote(fields[[id.slot]]), " does not exist")
       }
     }
     # Submit a DELETE request and stop if an error is returned
@@ -285,24 +281,28 @@ hiveDelete <- function (
         url=hiveURL(hiveApp(type), fields[[id.slot]]), method="DELETE", curl=con
       )
     )
-    # Convert the list to a logical vector
-    # (there is only one element, 'success', in the result)
-    response <- unlist(response)
+    if (is.list(response)) {
+      # Convert the list to a logical vector
+      # (there is only one element, 'success', in the result)
+      response <- unname(unlist(response))
+    } else {
+      # When deleting a Group, 200 HTTP status code is returned with message:
+      #   group: groupname successfully deleted -
+      #          lets hope you didnt break something
+      # so this line sets the result to TRUE as it would be for
+      # type == "Entity" or type == "EntityClass"
+      response <- TRUE
+    }
     # Return the response
     if (verbose) {
       if (type == "Entity") {
-        cat(
-          object@.class, "record", as.character(objectId(object)),
-          "was successfully deleted.\n"
-        )
+        cat(object@.class, "record", as.character(objectId(object)))
       } else {
-        cat(
-          type, "record", sQuote(objectId(object)),
-          "was successfully deleted.\n"
-        )
+        cat(type, "record", sQuote(objectId(object)))
       }
+      cat(" was successfully deleted.\n")
     }
-    response
+    invisible(response)
   }
 }
 
@@ -329,10 +329,8 @@ hiveGet <- function (
   fields[[id.slot]] <- as.character(fields[[id.slot]])
   if (length(fields[[id.slot]]) == 0) {
     stop(
-      paste(
-        "The", sQuote(id.slot), "argument is required to retrieve a",
-        type, "object"
-      )
+      "The ", sQuote(id.slot), " argument is required to retrieve a ",
+      type, " object"
     )
   }
 
@@ -377,10 +375,8 @@ hiveUpdate <- function (
   # Ensure that an ID was provided for the object
   if (length(fields[[id.slot]]) == 0) {
     stop(
-      paste(
-        "The", sQuote(id.slot), "argument is required to update a",
-        type, "record"
-      )
+      "The ", sQuote(id.slot), " argument is required to update a ",
+      type, "record"
     )
   }
   # Check to see if the record exists in the hive; if not, exit with an error
@@ -389,11 +385,9 @@ hiveUpdate <- function (
   )
   if (inherits(object, "try-error")) {
     stop(
-      paste(
-        type, "record",
-        ifelse(type == "Entity", fields[[id.slot]], sQuote(fields[[id.slot]])),
-        "does not exist; add a new record instead"
-      )
+      type, " record ",
+      ifelse(type == "Entity", fields[[id.slot]], sQuote(fields[[id.slot]])),
+      " does not exist; add a new record instead"
     )
   }
 
@@ -411,10 +405,8 @@ hiveUpdate <- function (
   #       all of which are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      paste(
-        "All arguments in '...' must be named,",
-        "and these names must correspond to valid", Class, "object slots"
-      )
+      "All arguments in '...' must be named, ",
+      "and these names must correspond to valid ", Class, " object slots"
     )
   }
   # Coerce all fields corresponding to S4 object slots to the appropriate class
@@ -497,15 +489,12 @@ hiveUpdate <- function (
         if (verbose) {
           cat("Adding the following", sQuote(variable.id), "element(s) to ")
           if (type == "Entity") {
-            cat(
-              sprintf(
-                "%s record %s: ", object@.class, as.character(fields[[id.slot]])
-              )
-            )
+            cat(object@.class, "record", as.character(fields[[id.slot]]))
           } else {
-            cat(sprintf("%s record %s: ", type, sQuote(fields[[id.slot]])))
+            cat(type, "record", sQuote(fields[[id.slot]]))
           }
-          cat(paste(sQuote(new.elements), collapse=", "))
+          cat(": ")
+          cat(sQuote(new.elements), sep=", ")
           cat("\n")
         }
         if (slots[variable.id] == "UUIDList") {
@@ -536,10 +525,8 @@ hiveUpdate <- function (
         )
         if (any(!valid.groups)) {
           stop(
-            paste(
-              "The following groups do not exist:",
-              paste(sQuote(updates$groups[!valid.groups]), collapse=", ")
-            )
+            "The following groups do not exist: ",
+            paste(sQuote(updates$groups[!valid.groups]), collapse=", ")
           )
         }
       }
@@ -548,10 +535,8 @@ hiveUpdate <- function (
       if (!is.null(updates$email)) {
         if (updates$email %in% listUsers(con=con)$email) {
           stop(
-            paste(
-              "Cannot change email address to", sQuote(updates$email),
-              "as it is already in use"
-            )
+            "Cannot change email address to ", sQuote(updates$email),
+            " as it is already in use"
           )
         }
       }
@@ -600,14 +585,12 @@ hiveUpdate <- function (
     if (verbose) {
       cat("The following field(s) of ")
       if (type == "Entity") {
-        cat(
-          paste(object@.class, "record", as.character(fields[[id.slot]]))
-        )
+        cat(object@.class, "record", as.character(fields[[id.slot]]))
       } else {
-        cat(paste(type, "record", sQuote(fields[[id.slot]])))
+        cat(type, "record", sQuote(fields[[id.slot]]))
       }
       cat(" were updated: ")
-      cat(paste(sQuote(names(updates)), collapse=", "))
+      cat(sQuote(names(updates), sep=", "))
       cat("\n")
     }
     invisible(result)
@@ -654,10 +637,8 @@ hiveList <- function (
   #       all of which are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      paste(
-        "All arguments in '...' must be named,",
-        "and these names must correspond to valid", Class, "object slots"
-      )
+      "All arguments in '...' must be named, ",
+      "and these names must correspond to valid", Class, "object slots"
     )
   }
   # Coerce all fields corresponding to S4 object slots to the appropriate class

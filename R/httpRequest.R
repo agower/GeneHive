@@ -142,15 +142,19 @@ httpRequest <- function (
 
   # Process the HTTP response body according to the content type
   if (!is.null(attributes(response))) {
-    # Sometimes the HTTP response comes back as raw when it should really be
-    #   character (e.g., when a DELETE request is sent with a Group)
-    #   so this workaround is used to coerce the raw response back to character
+    # Sometimes the HTTP response has been observed to come back with
+    # Content-Type "application/octet-stream" (i.e., raw) when it
+    # should really be "text/plain" (i.e., character); this workaround is used
+    # to coerce the raw response back to character
     if (attr(response, "Content-Type") == "application/octet-stream") {
       if (httpheader["Accept"] != "application/octet-stream") {
         response <- rawToChar(response)
       }
     } else if (attr(response, "Content-Type") == "application/json") {
-      response <- fromJSON(response)
+      # When a bad password is provided or a Group is deleted,
+      # a plaintext message is returned with Content-Type "application/json";
+      # tryCatch() prevents fromJSON() from throwing an error
+      response <- tryCatch(fromJSON(response), error = function (x) response)
     }
   }
   if (http.status.code >= 400) {

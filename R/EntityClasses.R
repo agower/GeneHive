@@ -62,30 +62,27 @@ addEntityClass <- function (
       sub("^[ ]+", "", scan(filename, what="", sep="\n", quiet=TRUE)),
       collapse=""
     )
-    if (isJSON(class.definition)) {
-      entity.class <- fromJSON(class.definition)
-      if (!is.element("name", names(entity.class))) {
-        stop(
-          paste(
-            "File", sQuote(filename),
-            "does not contain a valid entity class definition"
-          )
-        )
+    entity.class <- tryCatch(
+      fromJSON(class.definition),
+      error = function (x) {
+        stop("File ", sQuote(filename), " does not contain valid JSON code")
       }
-    } else {
-      stop(paste("File", sQuote(filename), "does not contain valid JSON code"))
+    )
+    if (!is.element("name", names(entity.class))) {
+      stop(
+        "File ", sQuote(filename),
+        " does not contain a valid entity class definition"
+      )
     }
   } else {
-    stop(paste("File", sQuote(filename), "does not exist"))
+    stop("File ", sQuote(filename), " does not exist")
   }
 
   # If the EntityClass already exists, exit with an error
   if (is.element(entity.class$name, sapply(listEntityClasses(con), objectId))) {
     stop(
-      paste(
-        "EntityClass", sQuote(entity.class$name),
-        "already exists; use updateEntityClass() instead"
-      )
+      "EntityClass ", sQuote(entity.class$name),
+      " already exists; use updateEntityClass() instead"
     )
   }
 
@@ -164,31 +161,28 @@ updateEntityClass <- function (
       sub("^[ ]+", "", scan(filename, what="", sep="\n", quiet=TRUE)),
       collapse=""
     )
-    if (isJSON(class.definition)) {
-      entity.class <- fromJSON(class.definition)
-      if (!is.element("name", names(entity.class))) {
-        stop(
-          paste(
-            "File", sQuote(filename),
-            "does not contain a valid entity class definition"
-          )
-        )
+    entity.class <- tryCatch(
+      fromJSON(class.definition),
+      error = function (x) {
+        stop("File ", sQuote(filename), " does not contain valid JSON code")
       }
-    } else {
-      stop(paste("File", sQuote(filename), "does not contain valid JSON code"))
+    )
+    if (!is.element("name", names(entity.class))) {
+      stop(
+        "File ", sQuote(filename),
+        " does not contain a valid entity class definition"
+      )
     }
   } else {
-    stop(paste("File", sQuote(filename), "does not exist"))
+    stop("File ", sQuote(filename), " does not exist")
   }
 
   # If the EntityClass does not exist, exit with an error
   if (!is.element(entity.class$name, sapply(listEntityClasses(con), objectId)))
   {
     stop(
-      paste(
-        "EntityClass", sQuote(entity.class$name),
-        "does not exist; use addEntityClass() instead"
-      )
+      "EntityClass ", sQuote(entity.class$name),
+      " does not exist; use addEntityClass() instead"
     )
   }
 

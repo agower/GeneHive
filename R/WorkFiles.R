@@ -51,12 +51,13 @@
 #' @return
 #' \describe{
 #'   \item{\code{addWorkFile}}{
-#'     If a WorkFile exists with the same hash as the input file, it is assumed
-#'     that they are identical; the existing record will be returned invisibly
-#'     as a WorkFileProperties object, and a warning message will be issued.
-#'     If a WorkFile does not exist with the same MD5 hash as the input file,
-#'     the file is uploaded and the resulting WorkFile is returned invisibly as
-#'     a WorkFileProperties object.
+#'     If a \code{WorkFile} exists with the same hash as the input file, it is
+#'     assumed that they are identical; the existing record will be returned
+#'     invisibly as a \code{linkS4class{hiveWorkFileProperties}} object, and a
+#'     warning message will be issued. If a \code{WorkFile} does not exist with
+#'     the same MD5 hash as the input file, the file is uploaded and the
+#'     resulting \code{WorkFile} is returned invisibly as a
+#'     \code{linkS4class{hiveWorkFileProperties}} object.
 #'   }
 #'   \item{\code{getWorkFile}}{
 #'     No value is returned.
