@@ -590,7 +590,7 @@ hiveUpdate <- function (
         cat(type, "record", sQuote(fields[[id.slot]]))
       }
       cat(" were updated: ")
-      cat(sQuote(names(updates), sep=", "))
+      cat(sQuote(names(updates)), sep=", ")
       cat("\n")
     }
     invisible(result)
