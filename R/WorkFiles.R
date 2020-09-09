@@ -109,12 +109,6 @@ addWorkFile <- function (
   if (!(is.logical(compress) && length(compress) == 1)) {
     stop("Argument 'compress' must be a logical vector of length 1")
   }
-  if (!(is.character(group) && length(group) == 1)) {
-    stop("Argument 'group' must be a character vector of length 1")
-  }
-  if (!(is.character(token) && length(token) == 1)) {
-    stop("Argument 'token' must be a character vector of length 1")
-  }
   if (!is(permissions, "hivePermissions")) {
     stop("Argument 'permissions' must be a hivePermissions object")
   }
@@ -126,11 +120,17 @@ addWorkFile <- function (
   }
 
   if (!missing(group)) {
+    if (!(is.character(group) && length(group) == 1)) {
+      stop("Argument 'group' must be a character vector of length 1")
+    }
     if (!is.element(group, listGroups(con))) {
       stop(paste(sQuote(group), "is not a valid Group"))
     }
   }
   if (!missing(token)) {
+    if (!(is.character(token) && length(token) == 1)) {
+      stop("Argument 'token' must be a character vector of length 1")
+    }
     if (!grepl("^[0-9A-Fa-f]{64}$", token)) {
       stop(paste(sQuote(token), "is not a 256-bit hexadecimal string"))
     }
