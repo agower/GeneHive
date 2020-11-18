@@ -103,15 +103,14 @@ httpRequest <- function (
     }
   }
 
-  # Duplicate the CURL handle to prevent resetting of CURLOptions across
-  # function calls
+  # Duplicate CURL handle to prevent resetting of CURLOptions across calls
   curl <- dupCurlHandle(curl)
 
   # Construct the list of CURLOptions to be used with curlPerform()
-  curl.reader <- dynCurlReader(curl, baseURL=url)
+  curl_reader <- dynCurlReader(curl, baseURL=url)
   .opts <- list(
     url=url, customrequest=method, httpheader=httpheader,
-    headerfunction=curl.reader$update
+    headerfunction=curl_reader$update
   )
   if (method == "POST") {
     .opts <- c(.opts, list(post=TRUE, postfields=content))
@@ -124,56 +123,59 @@ httpRequest <- function (
   # Set the CURLOptions and protect them from garbage collection
   curlSetOpt(.opts=.opts, curl=curl, .isProtected=TRUE)
 
-  # Submit an HTTP request to the specified URL
-  # Note: a repeat loop is used because PUT requests may require two passes
+  # Submit an HTTP request to the specified URL, up to twice, if needed
+  # Note: PUT requests may require two passes
   #       (stream can't be rewound during multi-pass authentication)
-  repeat {
-    try(curlPerform(curl=curl), silent=TRUE)
-    if (!inherits(.Last.value, "try-error")) break
+  curlPerform_result <- try(curlPerform(curl=curl), silent=TRUE)
+  if (inherits(curlPerform_result, "try-error")) {
+    curlPerform_result <- try(curlPerform(curl=curl), silent=TRUE)
   }
 
-  # Extract the HTTP header and response body
-  header <- parseHTTPHeader(curl.reader$header())
-  response <- curl.reader$value()
-
-  # Terminate if an HTTP error was encountered
-  # otherwise, return the response body
-  http.status.code <- as.integer(header["status"])
-
-  # Process the HTTP response body according to the content type
-  if (!is.null(attributes(response))) {
-    # Sometimes the HTTP response has been observed to come back with
-    # Content-Type "application/octet-stream" (i.e., raw) when it
-    # should really be "text/plain" (i.e., character); this workaround is used
-    # to coerce the raw response back to character
-    if (attr(response, "Content-Type") == "application/octet-stream") {
-      if (httpheader["Accept"] != "application/octet-stream") {
-        response <- rawToChar(response)
-      }
-    } else if (attr(response, "Content-Type") == "application/json") {
-      # When a bad password is provided or a Group is deleted,
-      # a plaintext message is returned with Content-Type "application/json";
-      # tryCatch() prevents fromJSON() from throwing an error
-      response <- tryCatch(fromJSON(response), error = function (x) response)
-    }
-  }
-  if (http.status.code >= 400) {
-    # If there was an error, initialize an error message vector with the
-    # HTTP status line
-    error.message <- paste0(
-      "HTTP ", http.status.code, ": ", header["statusMessage"]
-    )
-    # Remove any newline at the end of the status line
-    error.message <- sub("\r?\n?$", "", error.message)
-    # Add the HTTP response body (if it exists) to end of error message vector
-    error.message <- c(
-      error.message,
-      if (is.raw(response)) rawToChar(response) else as.character(response)
-    )
-    # Return the message as a simpleError object
-    simpleError(error.message)
+  # If request could not be made, return curl error code as SimpleError object;
+  # otherwise, parse HTTP response body, header, and status code
+  if (inherits(curlPerform_result, "try-error")) {
+    simpleError(attr(curlPerform_result, "condition")$message)
   } else {
-    # Otherwise, return the response
-    response
+    # Extract HTTP response body and process according to content type
+    response <- curl_reader$value()
+    if (!is.null(attributes(response))) {
+      # Sometimes the HTTP response has been observed to come back with
+      # Content-Type "application/octet-stream" (i.e., raw) when it
+      # should really be "text/plain" (i.e., character); this workaround is used
+      # to coerce the raw response back to character
+      if (attr(response, "Content-Type") == "application/octet-stream") {
+        if (httpheader["Accept"] != "application/octet-stream") {
+          response <- rawToChar(response)
+        }
+      } else if (attr(response, "Content-Type") == "application/json") {
+        # When a bad password is provided or a Group is deleted,
+        # a plaintext message is returned with Content-Type "application/json";
+        # tryCatch() prevents fromJSON() from throwing an error
+        response <- tryCatch(fromJSON(response), error = function (x) response)
+      }
+    }
+
+    # Extract HTTP header and status code
+    header <- parseHTTPHeader(curl_reader$header())
+    http_status_code <- as.integer(header["status"])
+    if (http_status_code >= 400) {
+      # If there was an error, initialize an error message vector
+      # with the HTTP status line
+      error_message <- paste0(
+        "HTTP ", http_status_code, ": ", header["statusMessage"]
+      )
+      # Remove any newline at the end of the status line
+      error_message <- sub("\r?\n?$", "", error_message)
+      # Add the HTTP response body (if it exists) to end of error message vector
+      error_message <- c(
+        error_message,
+        if (is.raw(response)) rawToChar(response) else as.character(response)
+      )
+      # Return the message as a simpleError object
+      simpleError(error_message)
+    } else {
+      # Otherwise, return the response
+      response
+    }
   }
 }

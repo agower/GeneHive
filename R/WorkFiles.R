@@ -13,8 +13,8 @@
 #' \code{WorkFile}s, or to test whether a character string represents a valid
 #' \code{WorkFile} identifier.
 #' @param id
-#' A character string or \code{\linkS4class{hiveWorkFileID}} object specifying
-#' the unique identifier of a \code{WorkFileProperties} record.
+#' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique
+#' identifier of a \code{WorkFileProperties} record.
 #' Automatically created when a \code{WorkFile} is uploaded.
 #' @param filename
 #' A character string specifying the full path to a file; for
@@ -151,7 +151,7 @@ addWorkFile <- function (
   }
 
   # Create a temporary file
-  temp.filename <- tempfile()
+  temp_filename <- tempfile()
   # Read the file into a raw vector
   buf <- tryCatch(
     readBin(con=filename, what="raw", n=file.info(filename)$size),
@@ -166,9 +166,9 @@ addWorkFile <- function (
     #       - readBin(gzcon(rawConnection(buf))) requires knowledge of total
     #         size of uncompressed data, which is not easily computed
     #         from gzip files (which only store the size modulo 2^32)
-    gunzip(filename, destname=temp.filename, remove=FALSE)
+    gunzip(filename, destname=temp_filename, remove=FALSE)
     originalName <- digest(
-      temp.filename, algo=getOption("GeneHive.hashing.algorithm"),
+      temp_filename, algo=getOption("GeneHive.hashing.algorithm"),
       serialize=FALSE, file=TRUE
     )
     if (compress) {
@@ -193,30 +193,30 @@ addWorkFile <- function (
       # - memCompress() does not produce standard gzip file and is unused
       # - gzcon(rawConnection(raw(0),open="w")) does not work as advertised in
       #   gzcon() man page to compress directly to a raw vector
-      tempfile.con <- gzfile(temp.filename, open="wb")
-      writeBin(buf, tempfile.con)
-      close(tempfile.con)
+      tempfile_con <- gzfile(temp_filename, open="wb")
+      writeBin(buf, tempfile_con)
+      close(tempfile_con)
       buf <- readBin(
-        temp.filename, what="raw", n=file.info(temp.filename)$size
+        temp_filename, what="raw", n=file.info(temp_filename)$size
       )
       # Compute file extension
       fileType <- ifelse(fileType == "", "gz", paste0(fileType, ".gz"))
     }
   }
   # Clean up
-  unlink(temp.filename)
+  unlink(temp_filename)
 
   # Check whether a WorkFile record with the computed hash exists
-  workFile.id <- hiveWorkFileID(
+  workFile_id <- hiveWorkFileID(
     listWorkFiles(originalName=originalName, con=con)$id
   )
 
-  if (length(workFile.id) == 1) {
+  if (length(workFile_id) == 1) {
     warning(
-      "WorkFile ", sQuote(workFile.id), " already exists with original hash ",
+      "WorkFile ", sQuote(workFile_id), " already exists with original hash ",
       originalName
     )
-    result <- getWorkFileProperties(workFile.id)
+    result <- getWorkFileProperties(workFile_id)
   } else {
     if (verbose) cat(
       sprintf("Uploading contents of file '%s'.\n", basename(filename))
@@ -268,11 +268,8 @@ getWorkFile <- function (
   if (missing(id) || missing(filename)) {
     stop("Arguments 'id' and 'filename' are required")
   }
-  if (!((is.character(id) && length(id) == 1) || is(id, "WorkFileID"))) {
-    stop(
-      "Argument 'id' must be a character vector of length 1 ",
-      "or a WorkFileID"
-    )
+  if (!is(id, "hiveWorkFileID")) {
+    stop("Argument 'id' must be a hiveWorkFileID object")
   }
   if (!(is.character(filename) && length(filename) == 1)) {
     stop("Argument 'filename' must be a character vector of length 1")
@@ -283,8 +280,6 @@ getWorkFile <- function (
   if (!(is.logical(verbose) && length(verbose) == 1)) {
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
-
-  id <- hiveWorkFileID(id)
 
   # Try retrieving the WorkFile from the hive,
   # and exit with an error message if unsuccessful
@@ -309,9 +304,9 @@ getWorkFile <- function (
   # Try to write to a file
   # Note: as.raw() is used to drop all attributes of 'response'
   # (an error is thrown otherwise)
-  write.res <- try(writeBin(object=as.raw(response), con=filename), silent=TRUE)
+  write_res <- try(writeBin(object=as.raw(response), con=filename), silent=TRUE)
   # Report back with error/success status
-  if (inherits(write.res, "try-error")) {
+  if (inherits(write_res, "try-error")) {
     stop(paste("Could not write to file", sQuote(filename)))
   } else {
     if (verbose) {
@@ -333,11 +328,8 @@ getWorkFileAsObject <- function (
 {
   # Check arguments for errors
   if (missing(id)) stop("Argument 'id' is required")
-  if (!((is.character(id) && length(id) == 1) || is(id, "WorkFileID"))) {
-    stop(
-      "Argument 'id' must be a character vector of length 1 ",
-      "or a WorkFileID"
-    )
+  if (!is(id, "hiveWorkFileID")) {
+    stop("Argument 'id' must be a hiveWorkFileID object")
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")
@@ -346,19 +338,17 @@ getWorkFileAsObject <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  id <- hiveWorkFileID(id)
-
   # Download a WorkFile to a temporary file
-  temp.filename <- tempfile()
-  on.exit(unlink(temp.filename, force=TRUE))
+  temp_filename <- tempfile()
+  on.exit(unlink(temp_filename, force=TRUE))
   if (verbose) cat(sprintf("Retrieving WorkFile '%s'.\n", id))
-  getWorkFile(id, filename=temp.filename, con=con, verbose=FALSE)
+  getWorkFile(id, filename=temp_filename, con=con, verbose=FALSE)
   # If the file is in RDS format, read it into an R object;
   # otherwise, read it into a raw vector
-  result <- try(readRDS(temp.filename), silent=TRUE)
+  result <- try(readRDS(temp_filename), silent=TRUE)
   if (inherits(result, "try-error")) {
     result <- readBin(
-      temp.filename, what="raw", n=file.info(temp.filename)$size
+      temp_filename, what="raw", n=file.info(temp_filename)$size
     )
   }
   # Return the R object invisibly
@@ -393,10 +383,10 @@ importWorkFiles <- function (
   # Determine whether each file is present in the hive, and if not, add it
   result <- list()
   for (filename in filenames) {
-    workFile.record <- addWorkFile(filename, con=con, verbose=FALSE)
+    workFile_record <- addWorkFile(filename, con=con, verbose=FALSE)
     # Note: list() is required to keep the WorkFile ID from being coerced
     #       to a character vector
-    result <- c(result, list(objectId(workFile.record)))
+    result <- c(result, list(objectId(workFile_record)))
   }
   # Convert result to a hiveWorkFileID list and return it invisibly
   result <- hiveWorkFileIDList(result)
@@ -432,24 +422,24 @@ importWorkFileArchive <- function (
   }
 
   # Extract files to a temporary directory
-  temp.dir <- file.path(tempdir(), digest(filename))
-  dir.create(temp.dir)
-  on.exit(unlink(temp.dir, recursive=TRUE, force=TRUE))
+  temp_dir <- file.path(tempdir(), digest(filename))
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive=TRUE, force=TRUE))
 
   if (file_ext(filename) == "zip") {
-    system(sprintf("unzip '%s' -d %s", filename, temp.dir))
+    system(sprintf("unzip '%s' -d %s", filename, temp_dir))
   } else if (grepl("\\.(tar\\.|t)gz$", filename)) {
-    system(sprintf("tar xzvf '%s' --directory=%s", filename, temp.dir))
+    system(sprintf("tar xzvf '%s' --directory=%s", filename, temp_dir))
   } else if (file_ext(filename) == "tar") {
-    system(sprintf("tar xvf '%s' --directory=%s", filename, temp.dir))
+    system(sprintf("tar xvf '%s' --directory=%s", filename, temp_dir))
   } else {
     stop(paste("File", sQuote(filename), "is not an archive"))
   }
 
   # Attempt to upload import each file to a Sample; if unsuccessful, skip it with a warning message
-  temp.filenames <- list.files(temp.dir, full.names=TRUE, recursive=TRUE)
-  result <- importWorkFiles(temp.filenames)
-  names(result@listData) <- basename(temp.filenames)
+  temp_filenames <- list.files(temp_dir, full.names=TRUE, recursive=TRUE)
+  result <- importWorkFiles(temp_filenames)
+  names(result@listData) <- basename(temp_filenames)
 
   # Return the result invisibly
   invisible(result)
@@ -476,13 +466,13 @@ storeObjectAsWorkFile <- function (
   }
 
   # Save the R object to a temporary RDS file
-  temp.filename <- tempfile()
-  on.exit(unlink(temp.filename, force=TRUE))
-  saveRDS(x, file=temp.filename)
+  temp_filename <- tempfile()
+  on.exit(unlink(temp_filename, force=TRUE))
+  saveRDS(x, file=temp_filename)
   # Try to add the temporary RDS file to the hive as a WorkFile
   result <- suppressWarnings(
     addWorkFile(
-      temp.filename, fileType="rds",
+      temp_filename, fileType="rds",
       con=con, permissions=permissions, verbose=FALSE
     )
   )
@@ -499,17 +489,12 @@ validWorkFileId <- function (id, con=hiveConnection())
 {
   # Check arguments for errors
   if (missing(id)) stop("Argument 'id' is required")
-  if (!((is.character(id) && length(id) == 1) || is(id, "WorkFileID"))) {
-    stop(
-      "Argument 'id' must be a character vector of length 1 ",
-      "or a WorkFileID"
-    )
+  if (!is(id, "hiveWorkFileID")) {
+    stop("Argument 'id' must be a hiveWorkFileID object")
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")
   }
-
-  id <- hiveWorkFileID(id)
 
   # Try to get the WorkFile and return whether an error occurred
   workFile <- try(getWorkFileProperties(id=id, con), silent=TRUE)
