@@ -151,8 +151,10 @@ hivePostprocess <- function (
       }
     } else if (type == "Group") {
       # Coerce 'users' field to hiveUserList
+      # Note: cannot pass function 'hiveUser' to mapply(), since it cannot
+      #       be recycled; must pass in string "hiveUser" instead, which can be
       record$users <- hiveUserList(
-        mapply(do.call, hiveUser, args=record$users)
+        mapply(do.call, "hiveUser", args=record$users)
       )
     } else if (type == "WorkFileProperties") {
       # Coerce fields to S4 objects as necessary
