@@ -20,8 +20,8 @@
 #' A logical value specifying whether messages should be printed
 #' @return
 #' If the operation is successful, a \code{\linkS4class{hiveEntity}}
-#' object corresponding to the Publication record stored in the hive is
-#' invisibly returned; otherwise, the function terminates with an error message.
+#' object corresponding to the Publication record is invisibly returned;
+#' otherwise, the function terminates with an error message.
 #' @details
 #' The fields of the Publication record are populated from the PubMed XML
 #' record. If a DOI is present, it is added; otherwise, that field is left

@@ -9,6 +9,7 @@ hiveURL(
   query,
   hostname = getOption("GeneHive.hostname"),
   https = getOption("GeneHive.https"),
+  port = getOption("GeneHive.port"),
   api.base.path = getOption("GeneHive.api.base.path")
 )
 }
@@ -18,13 +19,16 @@ to construct the path}
 
 \item{query}{An optional named list of strings that specify the query parameters}
 
-\item{hostname}{A character string specifying the hostname (IP address) of the hive; defaults
-to the contents of the environment variable \code{HIVE_HOSTNAME} (if set) or
-\code{"localhost"} (if not set)}
+\item{hostname}{A character string specifying the hostname (IP address) of the hive;
+defaults to \code{getOption("GeneHive.hostname")}}
 
 \item{https}{A logical value specifying whether a secure HTTP connection should be used;
-defaults to the contents of the environment variable \code{HIVE_HTTPS}
-(if set) or \code{TRUE} (if not set)}
+defaults to \code{getOption("GeneHive.https")}}
+
+\item{port}{An optional integer value specifying the port to be used;
+defaults to \code{getOption("GeneHive.port")}.
+If this argument is \code{NULL}, no port will be included in the URL
+(i.e., the default port will be used).}
 
 \item{api.base.path}{A character string specifying the base URL path to the hive}
 }
@@ -34,6 +38,15 @@ A character string containing the specified API URL.
 \description{
 This function constructs a URL from the base URL of the hive and any
 arguments (e.g., function names).
+}
+\details{
+On package startup, the following default options are used if the
+corresponding environment variables are not set:
+\describe{
+  \item{GeneHive.hostname}{\code{"localhost"}}
+  \item{GeneHive.https}{\code{TRUE}}
+  \item{GeneHive.port}{\code{NULL} (i.e., use the default port)}
+}
 }
 \seealso{
 The function \code{\link{buildQueryString}} is used to create a query string

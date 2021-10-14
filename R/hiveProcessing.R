@@ -111,10 +111,6 @@ hivePostprocess <- function (
       record$permissions <- do.call(hivePermissions, args=record$permissions)
     } else if (type == "Entity") {
       # For each remaining field, populate the slot
-      # Note: intersect() accounts for S4 slots not included in the hive
-      #       response (i.e., not in record), as well as extraneous non-S4-slot
-      #       fields (e.g., .workfiles) included in the hive response
-      record <- record[intersect(names(record), names(slots))]
       for (slot.name in names(record)) {
         to.class <- slots[slot.name]
         if (!is(record[[slot.name]], to.class)) {
@@ -147,12 +143,17 @@ hivePostprocess <- function (
               }
             } else {
               record[[slot.name]] <- do.call(
-                "new", args=list(Class=to.class, record[[slot.name]])
+                new, args=list(Class=to.class, record[[slot.name]])
               )
             }
           }
         }
       }
+    } else if (type == "Group") {
+      # Coerce 'users' field to hiveUserList
+      record$users <- hiveUserList(
+        mapply(do.call, hiveUser, args=record$users)
+      )
     } else if (type == "WorkFileProperties") {
       # Coerce fields to S4 objects as necessary
       record$id <- hiveWorkFileID(record$id)

@@ -53,14 +53,13 @@
 #' @return
 #' \describe{
 #'   \item{\code{hiveAdd}, \code{hiveUpdate}}{
-#'     If the operation is successful, an S4 object is invisibly returned.
+#'     If the operation is successful, an S4 object (invisibly).
 #'   }
 #'   \item{\code{hiveGet}}{
-#'     If the operation is successful, an S4 object is returned.
+#'     If the operation is successful, an S4 object.
 #'   }
 #'   \item{\code{hiveDelete}}{
-#'     A logical value is invisibly returned stating whether the operation was
-#'     successful.
+#'     A logical value stating whether the operation was successful (invisibly).
 #'   }
 #'   \item{\code{hiveList}}{
 #'     \describe{
@@ -141,7 +140,7 @@ hiveAdd <- function (
   # that all of the data types, etc., are correct
   # Note: for hiveEntity subclasses, this step will also automatically compute
   # the ID of the object via initialize()
-  validObject(object <- do.call("new", c(Class=Class, fields)), complete=TRUE)
+  validObject(object <- do.call(new, c(Class=Class, fields)), complete=TRUE)
 
   # If the object ID was automatically computed and not explicitly provided,
   # move it into the 'fields' list; otherwise, the GeneHive server will
@@ -264,7 +263,7 @@ hiveDelete <- function (
       object.exists <- objectId(object) %in% hiveList("Group", con=con)
     } else {
       object <- try(
-        do.call("hiveGet", c(type=type, fields[id.slot], con=con)), silent=TRUE
+        do.call(hiveGet, c(type=type, fields[id.slot], con=con)), silent=TRUE
       )
       object.exists <- !inherits(object, "try-error")
     }
@@ -381,7 +380,7 @@ hiveUpdate <- function (
   }
   # Check to see if the record exists in the hive; if not, exit with an error
   object <- try(
-    do.call("hiveGet", c(type=type, fields[id.slot], con=con)), silent=TRUE
+    do.call(hiveGet, c(type=type, fields[id.slot], con=con)), silent=TRUE
   )
   if (inherits(object, "try-error")) {
     stop(
@@ -434,7 +433,7 @@ hiveUpdate <- function (
   #       fields will produce a warning
   suppressWarnings(
     validObject(
-      updates <- do.call("new", c(Class=Class, fields)), complete=TRUE
+      updates <- do.call(new, c(Class=Class, fields)), complete=TRUE
     )
   )
   # Convert the S4 object to a list of only those positions that were updated
@@ -666,7 +665,7 @@ hiveList <- function (
   # fields will produce a warning
   suppressWarnings(
     validObject(
-      parameters <- do.call("new", c(Class=Class, fields)), complete=TRUE
+      parameters <- do.call(new, c(Class=Class, fields)), complete=TRUE
     )
   )
   # Convert the S4 object to a list of only the parameters that were provided
@@ -714,10 +713,7 @@ hiveList <- function (
   # Define the slot that holds the ID of the object
   id.slot <- hiveSlotName(Class, "id")
 
-  if (type == "Group") {
-    # If type is 'Group', reduce result to a vector of group names
-    result <- sapply(response, "[[", id.slot)
-  } else if (simplify) {
+  if (simplify) {
     result <- as(result, "data.frame")
     # Convert any columns corresponding to non-atomic, non-UUID slots to
     # character representations
@@ -737,35 +733,6 @@ hiveList <- function (
       # of the result for convenience
       rownames(result) <- result[[id.slot]]
     }
-#    } else if (type == "Entity") {
-#      # If type is 'Entity', move object IDs to row names of data frame and
-#      # remove Entity class
-#      rownames(result) <- sapply(result[[id.slot]], as.character)
-#      result[[id.slot]] <- NULL
-#      result[[".class"]] <- NULL
-#      # If there are any results, proceed to make them human-readable
-#      if (nrow(result)) {
-#        # For columns containing lists of arrays in which any of element is of
-#        # length > 1, change the column to a vector of array lengths
-#        array.columns <- which(
-#          sapply(lapply(lapply(result, sapply, length), ">", 1), any)
-#        )
-#        if (length(array.columns)) {
-#          result[array.columns] <- lapply(result[array.columns], sapply, length)
-#          colnames(result)[array.columns] <- paste("#", names(array.columns))
-#          colnames(result)[colnames(result) == "# .Data"] <- "length"
-#        }
-#        # Change columns of UUIDs to columns of character vectors
-#        # Note: the following line uses intersect() because the ID field has
-#        #       been moved to the row names of 'result'
-#        uuid.columns <- intersect(
-#          colnames(result), names(which(slots == "UUID"))
-#        )
-#        for (i in seq_along(uuid.columns)) {
-#          result[[i]] <- sapply(result[[i]], as.character)
-#        }
-#      }
-#    }
   }
   result
 }

@@ -20,7 +20,7 @@
 #' @param na.rm
 #' Logical value specifying how to deal with features with NA weights and/or
 #' names: if \code{TRUE}, such features are removed from input; if \code{FALSE},
-#' the function will terminate with an error message
+#' the function terminates with an error message
 #' @param .permissions
 #' A \code{\linkS4class{hivePermissions}} object specifying the permissions to
 #' be used when creating the record

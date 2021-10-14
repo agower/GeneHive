@@ -15,6 +15,9 @@ records.
 \describe{
 \item{\code{.class}}{A character string specifying the Entity class of the record.}
 
+\item{\code{.class_name}}{A character string specifying the Entity class of the record; appears to be a
+duplicate field that should be deprecated soon. Not currently used.}
+
 \item{\code{.entity_id}}{A \code{\linkS4class{UUID}} specifying the unique identifier of the record.
 See Details.}
 
@@ -35,6 +38,10 @@ updated. Defaults to \code{""}.}
 
 \item{\code{.permissions}}{A \code{\linkS4class{hivePermissions}} object specifying the permissions
 associated with the record. Defaults to read-only.}
+
+\item{\code{.workfiles}}{An integer vector containing the IDs of any WorkFiles associated with the
+record; used internally by the server-side app.
+Defaults to an empty integer vector.}
 }}
 
 \section{Details}{

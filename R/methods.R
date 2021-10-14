@@ -14,7 +14,7 @@
 #' @param i
 #' A numeric, character or logical vector specifying elements to extract
 #' @return
-#' A \code{hiveEntity} object of the same length as \code{i} is returned.
+#' A \code{hiveEntity} object of the same length as \code{i}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 #' @export
@@ -158,6 +158,11 @@ setAs(
     }
     result
   }
+)
+
+setAs(
+  from="hiveUserList", to="character",
+  def = function (from) sapply(from@listData, objectId)
 )
 
 #setAs(
@@ -361,16 +366,15 @@ setGeneric(
 #' \itemize{
 #'   \item{
 #'     If the features in a given record do not match any
-#'     \code{FeatureSpace}s, a nil \code{\linkS4class{UUID}} is returned,
-#'     with a warning.
+#'     \code{FeatureSpace}s, a nil \code{\linkS4class{UUID}}, with a warning.
 #'   }
 #'   \item{
 #'     If the features match exactly one \code{FeatureSpace},
-#'     the UUID of that \code{FeatureSpace} is returned.
+#'     the UUID of that \code{FeatureSpace}.
 #'   }
 #'   \item{
 #'     If the features match more than one \code{FeatureSpace},
-#'     the \code{UUID} of the smallest \code{FeatureSpace} is returned.
+#'     the \code{UUID} of the smallest \code{FeatureSpace}.
 #'   }
 #' }
 #' Otherwise, the function terminates with an error message.

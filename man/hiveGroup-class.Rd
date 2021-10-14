@@ -14,6 +14,9 @@ It is a container for data about a given group of Users.
 \describe{
 \item{\code{name}}{A character string specifying the name of the group.
 Defaults to \code{""}.}
+
+\item{\code{users}}{A \code{\linkS4class{hiveUserList}} specifying the users in the group.
+Defaults to an empty \code{hiveUserList}.}
 }}
 
 \seealso{

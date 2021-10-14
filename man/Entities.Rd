@@ -54,18 +54,17 @@ if not provided, a new connection will be established}
 \value{
 \describe{
   \item{\code{addEntity}, \code{updateEntity}}{
-    If the operation is successful, a \code{\linkS4class{hiveEntity}}
-    object is invisibly returned.
+    If the operation is successful, a \code{\linkS4class{hiveEntity}} object
+    (invisibly).
   }
   \item{\code{getEntity}}{
-    If the operation is successful, a \code{\linkS4class{hiveEntity}}
-    object is returned.
+    If the operation is successful, a \code{\linkS4class{hiveEntity}} object.
   }
   \item{\code{deleteEntity}}{
-    A logical value is returned stating whether the operation was successful.
+    A logical value stating whether the operation was successful.
   }
   \item{\code{listEntities}}{
-    A \code{\linkS4class{hiveEntityList}} object is returned.
+    A \code{\linkS4class{hiveEntityList}} object.
   }
   \item{All functions}{
     If an error is encountered, the function terminates with a message.

@@ -17,27 +17,25 @@
 #' @return
 #' \itemize{
 #'   \item{
-#'     If \code{x} is of length zero, the output is a vector of length zero of
-#'     the same storage mode as \code{x}.
+#'     If \code{x} is of length zero, a vector of length zero of the same
+#'     storage mode as \code{x}.
 #'   }
 #'   \item{
-#'     If \code{x} is a character vector consisting solely of empty strings, the
-#'     output is \code{""}.
+#'     If \code{x} is a character vector consisting solely of empty strings,
+#'     \code{""}.
 #'   }
 #'   \item{
 #'     If \code{x} is a character vector containing invalid hexadecimal
-#'     strings, an NA value will be returned.
+#'     strings, \code{NA}.
 #'   }
 #'   \item{
-#'     Otherwise, a vector of length 1 of the same storage mode as \code{x} is
-#'     returned, containing the bitwise parity computed across all elements of
-#'     \code{x}.
-#'   }
-#'   \item{
-#'     If the storage mode of \code{x} is \code{"character"}, the output will
-#'     be in hexadecimal notation with no leading \code{"0x"}.
+#'     Otherwise, a vector of length 1 of the same storage mode as \code{x},
+#'     containing the bitwise parity computed across all elements of \code{x}.
 #'   }
 #' }
+#' @note
+#' If the storage mode of \code{x} is \code{"character"}, the output will
+#' be in hexadecimal notation with no leading \code{"0x"}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 setGeneric(

@@ -47,17 +47,17 @@ record to be deleted or retrieved}
 \describe{
   \item{\code{addEntityClass}, \code{updateEntityClass}}{
     If the operation is successful, a \code{\linkS4class{hiveEntityClass}}
-    object is invisibly returned.
+    object (invisibly).
   }
   \item{\code{getEntityClass}}{
     If the operation is successful, a \code{\linkS4class{hiveEntityClass}}
-    object is returned.
+    object.
   }
   \item{\code{deleteEntityClass}}{
-    A logical value is returned stating whether the operation was successful.
+    A logical value stating whether the operation was successful.
   }
   \item{\code{listEntityClasses}}{
-    A \code{\linkS4class{hiveEntityClassList}} object is returned.
+    A \code{\linkS4class{hiveEntityClassList}} object.
   }
   \item{All functions}{
     If an error is encountered, the function terminates with a message.

@@ -33,16 +33,15 @@ object in the \code{hiveEntityList}:
 \itemize{
   \item{
     If the features in a given record do not match any
-    \code{FeatureSpace}s, a nil \code{\linkS4class{UUID}} is returned,
-    with a warning.
+    \code{FeatureSpace}s, a nil \code{\linkS4class{UUID}}, with a warning.
   }
   \item{
     If the features match exactly one \code{FeatureSpace},
-    the UUID of that \code{FeatureSpace} is returned.
+    the UUID of that \code{FeatureSpace}.
   }
   \item{
     If the features match more than one \code{FeatureSpace},
-    the \code{UUID} of the smallest \code{FeatureSpace} is returned.
+    the \code{UUID} of the smallest \code{FeatureSpace}.
   }
 }
 Otherwise, the function terminates with an error message.

@@ -254,10 +254,12 @@ hiveUser <- setClass(
     group              = "character",
     groups             = "character",
     superuser          = "logical",
+    confirmed          = "logical",
     email              = "character",
     firstName          = "character",
     lastName           = "character",
     dateJoined         = "character",
+    lastLogin          = "character",
     untrashedFileUsage = "numeric",
     token              = "character",
     active             = "logical"
@@ -268,10 +270,12 @@ hiveUser <- setClass(
     group              = "",
     groups             = character(0),
     superuser          = FALSE,
+    confirmed          = FALSE,
     email              = "",
     firstName          = "",
     lastName           = "",
     dateJoined         = "",
+    lastLogin          = "",
     untrashedFileUsage = NA_real_,
     token              = "",
     active             = FALSE
@@ -279,6 +283,67 @@ hiveUser <- setClass(
 )
 setIs("hiveUser", "S4")
 sealClass("hiveUser", where=.GlobalEnv)
+
+#' @export hiveUserList
+#' @rdname hiveUserList-class
+#' @title Class to contain a list of User objects
+#' @description
+#' This class is a container for one or more User objects.
+#' @section Extends:
+#' This class directly extends class \code{\linkS4class{SimpleList}}.
+#' @author Adam C. Gower \email{agower@@bu.edu}
+
+# Container for a list of hiveUser objects
+setClass(
+  "hiveUserList",
+  prototype = new("SimpleList", elementType="hiveUser"),
+  validity = function (object)
+  {
+    error.messages <- list(
+      too.many.classes =
+        "A hiveUserList may only contain objects of a single class",
+      not.users =
+        "A hiveUserList must contain objects of class 'hiveUser'"
+    )
+    if (length(object@elementType) > 1) {
+      error.messages$too.many.classes
+    } else if (object@elementType != "hiveUser") {
+      error.messages$not.users
+    } else if (length(unique(unlist(lapply(object@listData, class)))) > 1) {
+      error.messages$too.many.classes
+    } else {
+      TRUE
+    }
+  },
+  contains = "SimpleList",
+  sealed = TRUE
+)
+
+#' @rdname hiveUserList-class
+#' @param listData
+#' A list of objects of class \code{\linkS4class{hiveUser}}
+#' @details
+#' This constructor function does not require that the \code{listData} argument
+#' be named.
+
+hiveUserList <- function (listData=list())
+{
+  # Check arguments for errors
+  if (!is.list(listData)) stop("Argument 'listData' must be a list")
+
+  # Return a list named by the IDs of the Users it contains (if any)
+  if (length(listData)) {
+    new(
+      "hiveUserList",
+      listData=setNames(
+        listData, sapply(lapply(listData, objectId), as.character)
+      ),
+      elementType=unique(sapply(listData, class))
+    )
+  } else {
+    new("hiveUserList", listData=listData)
+  }
+}
 
 #' @export hiveGroup
 #' @rdname hiveGroup-class
@@ -289,6 +354,9 @@ sealClass("hiveUser", where=.GlobalEnv)
 #' @slot name
 #' A character string specifying the name of the group.
 #' Defaults to \code{""}.
+#' @slot users
+#' A \code{\linkS4class{hiveUserList}} specifying the users in the group.
+#' Defaults to an empty \code{hiveUserList}.
 #' @seealso
 #' Functions for working with Group records in the hive are described in
 #' \code{\link{Groups}}.
@@ -296,8 +364,14 @@ sealClass("hiveUser", where=.GlobalEnv)
 
 hiveGroup <- setClass(
   "hiveGroup",
-  slots = c(name = "character"),
-  prototype = prototype(name = "")
+  slots = c(
+    name  = "character",
+    users = "hiveUserList"
+  ),
+  prototype = prototype(
+    name  = "",
+    users = hiveUserList()
+  )
 )
 setIs("hiveGroup", "S4")
 sealClass("hiveGroup", where=.GlobalEnv)
@@ -374,36 +448,38 @@ hiveWorkFileID <- setClass(
 hiveWorkFileProperties <- setClass(
   "hiveWorkFileProperties",
   slots = c(
-    id                 = "hiveWorkFileID",
-    hash               = "character",
-    creator            = "character",
-    group              = "character",
-    storage            = "character",
-    creatorJobRun      = "character",
-    originalName       = "character",
-    fileType           = "character",
-    isTrashed          = "logical",
-    isTransient        = "logical",
-    creationDatetime   = "character",
-    length             = "numeric",
-    token              = "character",
-    permissions        = "hivePermissions"
+    id                   = "hiveWorkFileID",
+    hash                 = "character",
+    creator              = "character",
+    group                = "character",
+    storage              = "character",
+    creatorJobRun        = "character",
+    originalName         = "character",
+    originalModifiedTime = "numeric",
+    fileType             = "character",
+    isTrashed            = "logical",
+    isTransient          = "logical",
+    creationDatetime     = "character",
+    length               = "numeric",
+    token                = "character",
+    permissions          = "hivePermissions"
   ),
   prototype = prototype(
-    id                 = new("hiveWorkFileID"),
-    hash               = "",
-    creator            = "",
-    group              = "",
-    storage            = "",
-    creatorJobRun      = "",
-    originalName       = "",
-    fileType           = "",
-    isTrashed          = FALSE,
-    isTransient        = FALSE,
-    creationDatetime   = "",
-    length             = 0,
-    token              = "",
-    permissions        = new("hivePermissions")
+    id                   = new("hiveWorkFileID"),
+    hash                 = "",
+    creator              = "",
+    group                = "",
+    storage              = "",
+    creatorJobRun        = "",
+    originalName         = "",
+    originalModifiedTime = -1,
+    fileType             = "",
+    isTrashed            = FALSE,
+    isTransient          = FALSE,
+    creationDatetime     = "",
+    length               = 0,
+    token                = "",
+    permissions          = new("hivePermissions")
   )
 )
 setIs("hiveWorkFileProperties", "S4")
@@ -718,14 +794,11 @@ hiveEntityClassList <- function (listData=list())
 #' This class is the S4 representation of the hive Entity record type.
 #' It is a container for structured metadata and references to other GeneHive
 #' records.
-# @slot name
-# A character string providing a short textual description (common name) of the
-# record. Defaults to \code{""}.
-# @slot description
-# A character string providing a longer textual description of the record.
-# Defaults to \code{""}.
 #' @slot .class
 #' A character string specifying the Entity class of the record.
+#' @slot .class_name
+#' A character string specifying the Entity class of the record; appears to be a
+#' duplicate field that should be deprecated soon. Not currently used.
 #' @slot .entity_id
 #' A \code{\linkS4class{UUID}} specifying the unique identifier of the record.
 #' See Details.
@@ -747,6 +820,10 @@ hiveEntityClassList <- function (listData=list())
 #' @slot .permissions
 #' A \code{\linkS4class{hivePermissions}} object specifying the permissions
 #' associated with the record. Defaults to read-only.
+#' @slot .workfiles
+#' An integer vector containing the IDs of any WorkFiles associated with the
+#' record; used internally by the server-side app.
+#' Defaults to an empty integer vector.
 #' @section Details:
 #' \code{hiveEntity} slots whose names begin with \code{.} are treated
 #' specially.  (The corresponding Entity fields are denoted with a
@@ -771,28 +848,28 @@ hiveEntityClassList <- function (listData=list())
 hiveEntity <- setClass(
   "hiveEntity",
   slots = c(
-#    name             = "character",
-#    description      = "character",
     .class           = "character",
+    .class_name      = "character",
     .entity_id       = "UUID",
     .creator         = "character",
     .owner           = "character",
     .group           = "character",
     .creation_date   = "character",
     .updated         = "character",
-    .permissions     = "hivePermissions"
+    .permissions     = "hivePermissions",
+    .workfiles       = "integer"
   ),
   prototype = prototype(
-#    name             = "",
-#    description      = "",
     .class           = "Entity",
+    .class_name      = "Entity",
     .entity_id       = new("UUID"),
     .creator         = "",
     .owner           = "",
     .group           = "",
     .creation_date   = "",
     .updated         = "",
-    .permissions     = new("hivePermissions")
+    .permissions     = new("hivePermissions"),
+    .workfiles       = integer(0)
   ),
   contains = "VIRTUAL"
 )

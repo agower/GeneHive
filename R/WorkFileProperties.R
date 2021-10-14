@@ -9,14 +9,16 @@
 #' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique identifier
 #' of a \code{WorkFileProperties} record.
 #' Automatically created when a \code{WorkFile} is uploaded.
+#' @param \dots
+#' Additional arguments specifying fields of the \code{WorkFileProperties}
+#' record to be updated, or fields on which to limit a listing
 #' @param isTrashed
 #' A logical value specifying how to limit the result with respect to trashed
 #' records.  If \code{FALSE} (default), only untrashed records are returned;
 #' if \code{TRUE}, only trashed records are returned; if \code{NA}, both trashed
 #' and untrashed records are returned.
-#' @param \dots
-#' Additional arguments specifying fields of the \code{WorkFileProperties}
-#' record to be updated, or fields on which to limit a listing
+#' @param simplify
+#' A logical value specifying whether to return the listing as a data frame
 #' @param con
 #' A \code{\linkS4class{hiveConnection}} object;
 #' if not provided, a new connection will be established
@@ -26,17 +28,23 @@
 #' \describe{
 #'   \item{\code{getWorkFileProperties}}{
 #'     If the operation is successful,
-#'     a \code{\linkS4class{hiveWorkFileProperties}} object
-#'     is returned.
+#'     a \code{\linkS4class{hiveWorkFileProperties}} object.
 #'   }
 #'   \item{\code{updateWorkFileProperties}}{
 #'     If the operation is successful,
-#'     a \code{\linkS4class{hiveWorkFileProperties}} object
-#'     is invisibly returned.
+#'     a \code{\linkS4class{hiveWorkFileProperties}} object (invisibly).
 #'   }
 #'   \item{\code{listWorkFileProperties}}{
-#'     A data frame containing one row per record and one column per field
-#'     is returned.
+#'     \describe{
+#'       \item{If \code{simplify} = \code{TRUE}}{
+#'         A data frame containing one row per record and one column per field.
+#'       }
+#'       \item{If \code{simplify} = \code{FALSE}}{
+#'         A \code{\linkS4class{SimpleList}} object
+#'         containing one \code{\linkS4class{hiveWorkFileProperties}} object
+#'         per record.
+#'       }
+#'     }
 #'   }
 #'   \item{All functions}{
 #'     If an error is encountered, the function terminates with a message.
@@ -93,7 +101,9 @@ updateWorkFileProperties <- function (
 
 #' @export
 #' @rdname WorkFileProperties
-listWorkFileProperties <- function (..., isTrashed=FALSE, con=hiveConnection())
+listWorkFileProperties <- function (
+  ..., isTrashed=FALSE, con=hiveConnection(), simplify=TRUE
+)
 {
   if (!(is.logical(isTrashed) && length(isTrashed) == 1)) {
     stop("Argument 'isTrashed' must be a logical vector of length 1")
@@ -102,13 +112,11 @@ listWorkFileProperties <- function (..., isTrashed=FALSE, con=hiveConnection())
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  if (!is.na(isTrashed)) {
-    # If isTrashed is set to TRUE or FALSE, limit the result accordingly
-    hiveList(con, type="WorkFileProperties", isTrashed=isTrashed, ...)
-  } else {
-    # Otherwise, return all results regardless of trashed status
-    hiveList(con, type="WorkFileProperties", ...)
-  }
+  arglist <- list(con=con, type="WorkFileProperties", simplify=simplify, ...)
+  # If isTrashed is set to TRUE or FALSE, limit the result accordingly;
+  # otherwise, return all results regardless of trashed status
+  if (!is.na(isTrashed)) arglist$isTrashed <- isTrashed
+  do.call(hiveList, args=arglist)
 }
 #' @export
 #' @rdname WorkFileProperties

@@ -24,8 +24,8 @@ if not provided, a new connection will be established}
 }
 \value{
 If the operation is successful, a \code{\linkS4class{hiveEntity}}
-object corresponding to the Publication record stored in the hive is
-invisibly returned; otherwise, the function terminates with an error message.
+object corresponding to the Publication record is invisibly returned;
+otherwise, the function terminates with an error message.
 }
 \description{
 This function adds or updates a single Publication record using metadata

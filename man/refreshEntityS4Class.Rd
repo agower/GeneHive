@@ -15,15 +15,15 @@ refreshEntityS4Class(class, verbose = getOption("GeneHive.verbose"))
 \itemize{
   \item{
     If the S4 class definition is successfully set or refreshed, the
-    class constructor function is returned, invisibly.
+    class constructor function (invisibly).
   }
   \item{
     If the S4 class definition exists in two or more namespaces (not
-    including \code{.GlobalEnv}) the function will terminate with an error.
+    including \code{.GlobalEnv}) the function terminates with an error.
   }
   \item{
     If a single S4 class definition exists, but is sealed,
-    the function will terminate with an error.
+    the function terminates with an error.
   }
 }
 }

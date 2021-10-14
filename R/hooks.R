@@ -2,7 +2,7 @@
 {
   # Set global options used by functions in the GeneHive package
   options(
-    GeneHive.api.base.path = "hive/v2",
+    GeneHive.api.base.path = "api/v2",
     GeneHive.hashing.algorithm = "md5",
     GeneHive.hostname = Sys.getenv("HIVE_HOSTNAME"),
     GeneHive.https = as.logical(toupper(Sys.getenv("HIVE_HTTPS"))),
@@ -17,19 +17,23 @@
     GeneHive.permissions = new(
       "hivePermissions", group=c("R"), other=character(0)
     ),
+    GeneHive.port = as.integer(Sys.getenv("HIVE_PORT")),
     GeneHive.proxy = FALSE,
     GeneHive.username = Sys.getenv("HIVE_USERNAME"),
     GeneHive.verbose = TRUE
   )
   # If any environment variables were not set (or logical variables were not set
   # properly), revert to default settings
-  if (options("GeneHive.hostname") == "") {
+  if (getOption("GeneHive.hostname") == "") {
     options(GeneHive.hostname = "localhost")
   }
-  if (is.na(options("GeneHive.https"))) {
+  if (is.na(getOption("GeneHive.https"))) {
     options(GeneHive.https = TRUE)
   }
-  if (options("GeneHive.username") == "") {
+  if (is.na(getOption("GeneHive.port"))) {
+    options(GeneHive.port = NULL)
+  }
+  if (getOption("GeneHive.username") == "") {
     options(GeneHive.username = unname(Sys.info()["user"]))
   }
   invisible()

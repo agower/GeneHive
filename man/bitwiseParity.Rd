@@ -30,25 +30,20 @@ containing hexadecimal values (leading \code{"0x"} optional)}
 \value{
 \itemize{
   \item{
-    If \code{x} is of length zero, the output is a vector of length zero of
-    the same storage mode as \code{x}.
+    If \code{x} is of length zero, a vector of length zero of the same
+    storage mode as \code{x}.
   }
   \item{
-    If \code{x} is a character vector consisting solely of empty strings, the
-    output is \code{""}.
+    If \code{x} is a character vector consisting solely of empty strings,
+    \code{""}.
   }
   \item{
     If \code{x} is a character vector containing invalid hexadecimal
-    strings, an NA value will be returned.
+    strings, \code{NA}.
   }
   \item{
-    Otherwise, a vector of length 1 of the same storage mode as \code{x} is
-    returned, containing the bitwise parity computed across all elements of
-    \code{x}.
-  }
-  \item{
-    If the storage mode of \code{x} is \code{"character"}, the output will
-    be in hexadecimal notation with no leading \code{"0x"}.
+    Otherwise, a vector of length 1 of the same storage mode as \code{x},
+    containing the bitwise parity computed across all elements of \code{x}.
   }
 }
 }
@@ -57,6 +52,10 @@ This function computes the bitwise parity of a set of integer, logical, or
 raw values, or a list of such vectors.  It is a convenient way to collapse a
 set of \code{\linkS4class{UUID}}s into a summary value, regardless of the
 order of the \code{UUID}s.
+}
+\note{
+If the storage mode of \code{x} is \code{"character"}, the output will
+be in hexadecimal notation with no leading \code{"0x"}.
 }
 \author{
 Adam C. Gower \email{agower@bu.edu}

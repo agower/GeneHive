@@ -17,9 +17,14 @@ updateWorkFileProperties(
   verbose = getOption("GeneHive.verbose")
 )
 
-listWorkFileProperties(..., isTrashed = FALSE, con = hiveConnection())
+listWorkFileProperties(
+  ...,
+  isTrashed = FALSE,
+  con = hiveConnection(),
+  simplify = TRUE
+)
 
-listWorkFiles(..., isTrashed = FALSE, con = hiveConnection())
+listWorkFiles(..., isTrashed = FALSE, con = hiveConnection(), simplify = TRUE)
 }
 \arguments{
 \item{id}{A \code{\linkS4class{hiveWorkFileID}} object specifying the unique identifier
@@ -38,22 +43,30 @@ record to be updated, or fields on which to limit a listing}
 records.  If \code{FALSE} (default), only untrashed records are returned;
 if \code{TRUE}, only trashed records are returned; if \code{NA}, both trashed
 and untrashed records are returned.}
+
+\item{simplify}{A logical value specifying whether to return the listing as a data frame}
 }
 \value{
 \describe{
   \item{\code{getWorkFileProperties}}{
     If the operation is successful,
-    a \code{\linkS4class{hiveWorkFileProperties}} object
-    is returned.
+    a \code{\linkS4class{hiveWorkFileProperties}} object.
   }
   \item{\code{updateWorkFileProperties}}{
     If the operation is successful,
-    a \code{\linkS4class{hiveWorkFileProperties}} object
-    is invisibly returned.
+    a \code{\linkS4class{hiveWorkFileProperties}} object (invisibly).
   }
   \item{\code{listWorkFileProperties}}{
-    A data frame containing one row per record and one column per field
-    is returned.
+    \describe{
+      \item{If \code{simplify} = \code{TRUE}}{
+        A data frame containing one row per record and one column per field.
+      }
+      \item{If \code{simplify} = \code{FALSE}}{
+        A \code{\linkS4class{SimpleList}} object
+        containing one \code{\linkS4class{hiveWorkFileProperties}} object
+        per record.
+      }
+    }
   }
   \item{All functions}{
     If an error is encountered, the function terminates with a message.

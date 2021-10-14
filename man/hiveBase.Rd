@@ -68,13 +68,13 @@ arrays, convert UUIDs to plain-text descriptions)}
 \value{
 \describe{
   \item{\code{hiveAdd}, \code{hiveUpdate}}{
-    If the operation is successful, an S4 object is invisibly returned.
+    If the operation is successful, an S4 object (invisibly).
   }
   \item{\code{hiveGet}}{
-    If the operation is successful, an S4 object is returned.
+    If the operation is successful, an S4 object.
   }
   \item{\code{hiveDelete}}{
-    A logical value is returned stating whether the operation was successful.
+    A logical value stating whether the operation was successful (invisibly).
   }
   \item{\code{hiveList}}{
     \describe{

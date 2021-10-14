@@ -29,7 +29,7 @@ or \code{species}}
 
 \item{na.rm}{A logical value specifying how to deal with features with NA values:
 if \code{TRUE}, such features are removed from input;
-if \code{FALSE}, the function will terminate with an error message}
+if \code{FALSE}, the function terminates with an error message}
 
 \item{.permissions}{A \code{\linkS4class{hivePermissions}} object specifying the permissions
 to be used when creating the record}

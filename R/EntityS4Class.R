@@ -32,15 +32,15 @@
 #' \itemize{
 #'   \item{
 #'     If the S4 class definition is successfully set or refreshed, the
-#'     class constructor function is returned, invisibly.
+#'     class constructor function (invisibly).
 #'   }
 #'   \item{
 #'     If the S4 class definition exists in two or more namespaces (not
-#'     including \code{.GlobalEnv}) the function will terminate with an error.
+#'     including \code{.GlobalEnv}) the function terminates with an error.
 #'   }
 #'   \item{
 #'     If a single S4 class definition exists, but is sealed,
-#'     the function will terminate with an error.
+#'     the function terminates with an error.
 #'   }
 #' }
 #' @author Adam C. Gower \email{agower@@bu.edu}
@@ -124,7 +124,7 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
         # Note: unlockBinding() is called via do.call()
         #       to avoid a NOTE during checks
         do.call(
-          "unlockBinding",
+          unlockBinding,
           args=list(sym=classMetaName(Class), env=Class.namespace)
         )
         # Reset the S4 class definition

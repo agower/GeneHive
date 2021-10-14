@@ -15,7 +15,7 @@ deleteGroup(
   verbose = getOption("GeneHive.verbose")
 )
 
-listGroups(con = hiveConnection())
+listGroups(con = hiveConnection(), simplify = TRUE)
 }
 \arguments{
 \item{name}{A character string specifying the name of a \code{Group}
@@ -25,18 +25,28 @@ record to be added or deleted}
 if not provided, a new connection will be established}
 
 \item{verbose}{A logical value specifying whether messages should be printed}
+
+\item{simplify}{A logical value specifying whether to return the listing as a data frame}
 }
 \value{
 \describe{
   \item{\code{addGroup}}{
-    If the operation is successful, a \code{\linkS4class{hiveGroup}}
-    object is invisibly returned.
+    If the operation is successful, a \code{\linkS4class{hiveGroup}} object
+    (invisibly).
   }
   \item{\code{deleteGroup}}{
-    A logical value is returned stating whether the operation was successful.
+    A logical value stating whether the operation was successful.
   }
   \item{\code{listGroups}}{
-    A character vector containing all \code{Group} names is returned.
+    \describe{
+      \item{If \code{simplify} = \code{TRUE}}{
+        A data frame containing one row per record and one column per field.
+      }
+      \item{If \code{simplify} = \code{FALSE}}{
+        A \code{\linkS4class{SimpleList}} object
+        containing one \code{\linkS4class{hiveGroup}} object per record.
+      }
+    }
   }
   \item{All functions}{
     If an error is encountered, the function terminates with a message.

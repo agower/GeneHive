@@ -19,7 +19,7 @@
 \item{i}{A numeric, character or logical vector specifying elements to extract}
 }
 \value{
-A \code{hiveEntity} object of the same length as \code{i} is returned.
+A \code{hiveEntity} object of the same length as \code{i}.
 }
 \description{
 These methods extract part of a \code{\linkS4class{hiveEntity}}

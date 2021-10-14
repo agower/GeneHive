@@ -15,6 +15,8 @@
 #' A logical value specifying whether to list only \code{User}s that are
 #' active or inactive; a value of \code{NA} shows all \code{User}s
 #' regardless of active status.
+#' @param simplify
+#' A logical value specifying whether to return the listing as a data frame
 #' @param con
 #' A \code{\linkS4class{hiveConnection}} object;
 #' if not provided, a new connection will be established
@@ -24,15 +26,21 @@
 #' \describe{
 #'   \item{\code{addUser}, \code{updateUser}}{
 #'     If the operation is successful, a \code{\linkS4class{hiveUser}} object
-#'     object is invisibly returned.
+#'     (invisibly).
 #'   }
 #'   \item{\code{getUser}}{
-#'     If the operation is successful, a \code{\linkS4class{hiveUser}} object
-#'     object is returned.
+#'     If the operation is successful, a \code{\linkS4class{hiveUser}} object.
 #'   }
 #'   \item{\code{listUsers}}{
-#'     A data frame containing one row per record and one column per field
-#'     is returned.
+#'     \describe{
+#'       \item{If \code{simplify} = \code{TRUE}}{
+#'         A data frame containing one row per record and one column per field.
+#'       }
+#'       \item{If \code{simplify} = \code{FALSE}}{
+#'         A \code{\linkS4class{SimpleList}} object
+#'         containing one \code{\linkS4class{hiveUser}} object per record.
+#'       }
+#'     }
 #'   }
 #'   \item{All functions}{
 #'     If an error is encountered, the function terminates with a message.
@@ -128,7 +136,7 @@ updateUser <- function (
 
 #' @export
 #' @rdname Users
-listUsers <- function (con=hiveConnection(), active=TRUE)
+listUsers <- function (con=hiveConnection(), active=TRUE, simplify=TRUE)
 {
   # Check arguments for errors
   if (!is(con, "hiveConnection")) {
@@ -138,9 +146,7 @@ listUsers <- function (con=hiveConnection(), active=TRUE)
     stop("Argument 'active' must be a logical vector of length 1")
   }
 
-  if (is.na(active)) {
-    hiveList(con, type="User")
-  } else {
-    hiveList(con, type="User", active=active)
-  }
+  arglist <- list(con=con, type="User", simplify=simplify)
+  if (is.na(active)) arglist$active <- active
+  do.call(hiveList, args=arglist)
 }

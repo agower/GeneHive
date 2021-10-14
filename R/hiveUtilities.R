@@ -41,7 +41,7 @@
 #'   }
 #'   \item{hiveS4Class}{
 #'     If the input corresponds to a valid S4 object class, it is returned;
-#'     otherwise, \code{NULL} is returned.
+#'     otherwise, \code{NULL}.
 #'   }
 #'   \item{hiveSlotName}{
 #'     A character vector of length 1 containing the name of the slot that
@@ -106,7 +106,7 @@ hiveExists <- function (
 
   arglist <- list(con=con, type=type)
   arglist[[hiveSlotName(hiveS4Class(type), "id")]] <- id
-  get.result <- try(do.call("hiveGet", args=arglist), silent=TRUE)
+  get.result <- try(do.call(hiveGet, args=arglist), silent=TRUE)
   !inherits(get.result, "try-error")
 }
 

@@ -24,7 +24,7 @@ updateUser(
   verbose = getOption("GeneHive.verbose")
 )
 
-listUsers(con = hiveConnection(), active = TRUE)
+listUsers(con = hiveConnection(), active = TRUE, simplify = TRUE)
 }
 \arguments{
 \item{username}{A character string specifying the name of a \code{User}
@@ -41,20 +41,28 @@ if not provided, a new connection will be established}
 \item{active}{A logical value specifying whether to list only \code{User}s that are
 active or inactive; a value of \code{NA} shows all \code{User}s
 regardless of active status.}
+
+\item{simplify}{A logical value specifying whether to return the listing as a data frame}
 }
 \value{
 \describe{
   \item{\code{addUser}, \code{updateUser}}{
     If the operation is successful, a \code{\linkS4class{hiveUser}} object
-    object is invisibly returned.
+    (invisibly).
   }
   \item{\code{getUser}}{
-    If the operation is successful, a \code{\linkS4class{hiveUser}} object
-    object is returned.
+    If the operation is successful, a \code{\linkS4class{hiveUser}} object.
   }
   \item{\code{listUsers}}{
-    A data frame containing one row per record and one column per field
-    is returned.
+    \describe{
+      \item{If \code{simplify} = \code{TRUE}}{
+        A data frame containing one row per record and one column per field.
+      }
+      \item{If \code{simplify} = \code{FALSE}}{
+        A \code{\linkS4class{SimpleList}} object
+        containing one \code{\linkS4class{hiveUser}} object per record.
+      }
+    }
   }
   \item{All functions}{
     If an error is encountered, the function terminates with a message.

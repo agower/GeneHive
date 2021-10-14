@@ -1,6 +1,6 @@
 Package: GeneHive
 Title: R interface to a GeneHive
-Version: 0.9-6
+Version: 0.9-7
 Author: Adam Gower <agower@bu.edu>
 Maintainer: Adam Gower <agower@bu.edu>
 Authors@R: c(person("Adam", "Gower", email = "agower@bu.edu", role = c("aut", "cre")))
@@ -35,4 +35,4 @@ Collate:
     hooks.R
 License: LGPL (>= 3) + file LICENSE
 Encoding: UTF-8
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.2

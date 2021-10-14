@@ -71,7 +71,7 @@ the corresponding slot name is desired}
   }
   \item{hiveS4Class}{
     If the input corresponds to a valid S4 object class, it is returned;
-    otherwise, \code{NULL} is returned.
+    otherwise, \code{NULL}.
   }
   \item{hiveSlotName}{
     A character vector of length 1 containing the name of the slot that

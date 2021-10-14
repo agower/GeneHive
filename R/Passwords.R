@@ -30,18 +30,18 @@
 #' @return
 #' \describe{
 #'   \item{\code{changePassword}}{
-#'     \code{TRUE} (returned invisibly) if the password was successfully
-#'     changed; otherwise, the function will terminate with an error.
+#'     \code{TRUE} (invisibly) if the password was successfully
+#'     changed; otherwise, the function terminates with an error.
 #'   }
 #'   \item{\code{checkPassword}}{
 #'     \code{TRUE} if the username and password are valid,
 #'     \code{FALSE} otherwise.
 #'   }
 #'   \item{\code{randomPassword}}{
-#'     The password, returned invisibly.
+#'     The password (invisibly).
 #'   }
 #'   \item{\code{resetPassword}}{
-#'     The HTTP response body of the request, returned invisibly.
+#'     The HTTP response body of the request (invisibly).
 #'   }
 #' }
 #' @author Adam C. Gower \email{agower@@bu.edu}
