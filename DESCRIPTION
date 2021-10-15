@@ -1,6 +1,6 @@
 Package: GeneHive
 Title: R interface to a GeneHive
-Version: 0.9-8
+Version: 0.9-9
 Author: Adam Gower <agower@bu.edu>
 Maintainer: Adam Gower <agower@bu.edu>
 Authors@R: c(person("Adam", "Gower", email = "agower@bu.edu", role = c("aut", "cre")))
