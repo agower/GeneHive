@@ -8,7 +8,7 @@
 #' @param id
 #' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique identifier
 #' of a \code{WorkFileProperties} record.
-#' Automatically created when a \code{WorkFile} is uploaded.
+#' Automatically populated when a \code{WorkFile} is uploaded.
 #' @param \dots
 #' Additional arguments specifying fields of the \code{WorkFileProperties}
 #' record to be updated, or fields on which to limit a listing

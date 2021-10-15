@@ -2,7 +2,7 @@
 % Please edit documentation in R/hiveURL.R
 \name{hiveURL}
 \alias{hiveURL}
-\title{Construct a hive API URL}
+\title{Construct an API URL}
 \usage{
 hiveURL(
   ...,
@@ -19,7 +19,7 @@ to construct the path}
 
 \item{query}{An optional named list of strings that specify the query parameters}
 
-\item{hostname}{A character string specifying the hostname (IP address) of the hive;
+\item{hostname}{A character string specifying the hostname (IP address) of the API server;
 defaults to \code{getOption("GeneHive.hostname")}}
 
 \item{https}{A logical value specifying whether a secure HTTP connection should be used;
@@ -30,14 +30,14 @@ defaults to \code{getOption("GeneHive.port")}.
 If this argument is \code{NULL}, no port will be included in the URL
 (i.e., the default port will be used).}
 
-\item{api.base.path}{A character string specifying the base URL path to the hive}
+\item{api.base.path}{A character string specifying the API base URL path}
 }
 \value{
 A character string containing the specified API URL.
 }
 \description{
-This function constructs a URL from the base URL of the hive and any
-arguments (e.g., function names).
+This function constructs a URL from the API base URL and any arguments
+(e.g., function names).
 }
 \details{
 On package startup, the following default options are used if the

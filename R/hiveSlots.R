@@ -1,9 +1,9 @@
 #' @rdname hiveSlots
-#' @name Get or set hive S4 object slots
-#' @title Get or set various slots of a hive S4 objects
+#' @name Get or set S4 object slots
+#' @title Get or set various slots of a S4 objects
 #' @description
 #' These are convenience functions for getting and setting various slots of
-#' an S4 representation of a hive record.
+#' an S4 representation of a record.
 #' @param object
 #' An R object
 #' @param value

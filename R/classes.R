@@ -27,7 +27,7 @@
 
 #' @export hiveConnection
 #' @rdname hiveConnection-class
-#' @title Class to contain a hive connection handle
+#' @title Class to contain a connection handle for API calls
 #' @description
 #' This S4 class is a container for a \code{cURL} handle that allows connection
 #' to a GeneHive instance.
@@ -45,10 +45,10 @@ setClass(
 
 #' @rdname hiveConnection-class
 #' @export
-#' @title Establish a connection to the hive via a cURL handle
+#' @title Establish a connection via a cURL handle
 #' @description
 #' This function creates a new \code{\linkS4class{hiveConnection}} object to
-#' establish a connection to the hive.
+#' be used for making API calls.
 #' @param username
 #' A character string denoting the user name to use when connecting
 #' @param netrc.file
@@ -125,7 +125,7 @@ hiveConnection <- function (
 
 #' @export hivePermissions
 #' @rdname hivePermissions-class
-#' @title Class to contain permissions for a hive record
+#' @title Class to contain permissions for a record
 #' @description
 #' This S4 class is a container for a set of permissions associated with a
 #' GeneHive record.
@@ -209,10 +209,16 @@ hivePermissions <- function (...)
 #' A character string specifying the password of the user.
 #' Defaults to \code{NA}.
 #' @slot group
-#' A character string specifying the name of the Group associated with
+#' A character string specifying the name of the default Group associated with
+#' the user. Defaults to \code{""}.
+#' @slot groups
+#' A character array specifying the name(s) of the Group(s) associated with
 #' the user. Defaults to \code{""}.
 #' @slot superuser
 #' A logical value specifying whether the user is a superuser.
+#' Defaults to \code{FALSE}.
+#' @slot confirmed
+#' A logical value specifying whether the user has been confirmed.
 #' Defaults to \code{FALSE}.
 #' @slot email
 #' A character string specifying the email address of the user.
@@ -225,13 +231,16 @@ hivePermissions <- function (...)
 #' Defaults to \code{""}.
 #' @slot dateJoined
 #' A character string specifying the date that the User record was
-#' created. Automatically populated by the hive.
+#' created. Automatically populated when the record is created.
+#' @slot lastLogin
+#' A character string specifying the timestamp of the User's last
+#' authentication. Automatically updated by the system.
 #' @slot untrashedFileUsage
 #' A numeric value specifying the file usage of the user.
-#' Automatically populated by the hive.
+#' Automatically updated by the system.
 #' @slot token
 #' A character string specifying a token that can be used for password-free
-#' authentication. Automatically populated by the hive.
+#' authentication. Automatically populated when the record is created.
 #' @slot active
 #' A logical value specifying whether the user is active.
 #' Defaults to \code{FALSE}.
@@ -242,8 +251,7 @@ hivePermissions <- function (...)
 #'     \code{name}.
 #'   }
 #' }
-#' Functions for working with User records in a GeneHive are described in
-#' \code{\link{Users}}.
+#' Functions for working with User records are described in \code{\link{Users}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 hiveUser <- setClass(
@@ -358,7 +366,7 @@ hiveUserList <- function (listData=list())
 #' A \code{\linkS4class{hiveUserList}} specifying the users in the group.
 #' Defaults to an empty \code{hiveUserList}.
 #' @seealso
-#' Functions for working with Group records in the hive are described in
+#' Functions for working with Group records are described in
 #' \code{\link{Groups}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
@@ -402,23 +410,28 @@ hiveWorkFileID <- setClass(
 #' type.  It is a container for metadata about a given WorkFile.
 #' @slot id
 #' A \code{\linkS4class{hiveWorkFileID}} specifying the unique identifier of the
-#' WorkFile. Automatically created when the file is uploaded.
+#' WorkFile. Automatically populated when the file is uploaded.
 #' @slot hash
 #' A character string specifying the MD5 checksum of the file.
-#' Automatically created when the file is uploaded.
+#' Automatically populated when the file is uploaded.
 #' @slot creator
 #' A character string specifying the \code{username} of the User
-#' associated with the record. Automatically created when the file is uploaded.
+#' associated with the record. Automatically populated when the file is uploaded.
 #' @slot group
 #' A character string specifying the \code{name} of the Group associated
-#' with the record. Automatically created when the file is uploaded.
+#' with the record. Automatically populated when the file is uploaded.
+#' @slot storage
+#' A character string specifying the location in which the WorkFile is stored.
+#' This is supplied by the user when the file is uploaded.
 #' @slot creatorJobRun
 #' A character string specifying the name of a JobRun associated with the
 #' WorkFile. (Not currently used.)
-#' Automatically created when the file is uploaded.
+#' Automatically populated when the file is uploaded.
 #' @slot originalName
 #' A character string specifying the original name of the file.
-#' Automatically created when the file is uploaded.
+#' Automatically populated when the file is uploaded.
+#' @slot originalModifiedTime
+#' A numeric value specifying the original timestamp of the file.
 #' @slot fileType
 #' A character string specifying the type (e.g., extension) of the file.
 #' Created when the file is uploaded.
@@ -430,19 +443,19 @@ hiveWorkFileID <- setClass(
 #' temporary. Defaults to \code{FALSE}.
 #' @slot creationDatetime
 #' A character string specifying the date and time that the record was created.
-#' Automatically created when the file is uploaded.
+#' Automatically populated when the file is uploaded.
 #' @slot length
 #' A numeric value specifying the length of the file in bytes.
-#' Automatically created when the file is uploaded.
+#' Automatically populated when the file is uploaded.
 #' @slot token
 #' A character string specifying a token that can be used for password-free
-#' authentication. Automatically created when the file is uploaded.
+#' authentication. Automatically populated when the file is uploaded.
 #' @slot permissions
 #' A \code{\linkS4class{hivePermissions}} object specifying the permissions
 #' associated with the record. Defaults to read-only.
 #' @seealso
-#' Functions for working with WorkFileProperties records in a GeneHive
-#' are described in \code{\link{WorkFileProperties}}.
+#' Functions for working with WorkFileProperties records are described in
+#' \code{\link{WorkFileProperties}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 hiveWorkFileProperties <- setClass(
@@ -536,7 +549,7 @@ hiveWorkFileIDList <- function (listData=list())
 #' @rdname hiveVariableDefinition-class
 #' @title Class to contain VariableDefinition records
 #' @description
-#' This class is the S4 representation of the hive VariableDefinition
+#' This class is the S4 representation of the VariableDefinition
 #' record type.  It is a container for a single variable associated with an
 #' EntityClass record.
 #' @slot name
@@ -640,8 +653,8 @@ hiveVariableDefinition <- setClass(
 #' @rdname hiveVariableDefinitionCollection-class
 #' @title Class to contain VariableDefinitionCollection records
 #' @description
-#' This class is the S4 representation of the hive
-#' VariableDefinitionCollection record type.
+#' This class is the S4 representation of the VariableDefinitionCollection
+#' record type.
 #' It is a container for the variables and metadata associated with a collection
 #' of variable definitions in an EntityClass record.
 #' @slot elementType
@@ -698,8 +711,14 @@ hiveVariableDefinitionCollection <- function (listData=list())
 #' @slot permissions
 #' A \code{\linkS4class{hivePermissions}} object specifying the permissions
 #' associated with the record. Defaults to read-only.
+#' @slot .creation_date
+#' A character string specifying the time and date at which the record was
+#' created. Defaults to \code{""}.
+#' @slot .updated
+#' A character string specifying the time and date at which the record was last
+#' updated. Defaults to \code{""}.
 #' @seealso
-#' Functions for working with EntityClass records in the hive are
+#' Functions for working with EntityClass records are
 #' described in \code{\link{EntityClasses}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
@@ -791,7 +810,7 @@ hiveEntityClassList <- function (listData=list())
 #' @rdname hiveEntity-class
 #' @title Class to contain Entity records
 #' @description
-#' This class is the S4 representation of the hive Entity record type.
+#' This class is the S4 representation of the Entity record type.
 #' It is a container for structured metadata and references to other GeneHive
 #' records.
 #' @slot .class

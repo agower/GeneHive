@@ -83,7 +83,7 @@ changePassword <- function (
   # (otherwise it will be renamed below and will not exist by end of function)
   on.exit(unlink(netrc.tempfile))
 
-  # Establish a connection to the hive #########################################
+  # Authenticate ###############################################################
 
   valid.password <- FALSE
   # If a .netrc file exists, try using that first to connect
@@ -132,7 +132,7 @@ changePassword <- function (
     }
   }
 
-  # Update the User record in the hive
+  # Update the User record
   updateUser(username=username, password=new.password, con=con, verbose=FALSE)
   if (verbose) {
     cat("Password for user", sQuote(username), "was successfully changed.\n")
@@ -173,7 +173,7 @@ checkPassword <- function (
     stop("Argument 'password' must be a character vector of length 1")
   }
 
-  # Submit a GET request to the hive and stop if an error is returned
+  # Submit a GET request and stop if an error is returned
   response <- stopIfHiveError(
     httpRequest(
       url=hiveURL(
@@ -249,7 +249,7 @@ resetPassword <- function (
   parameters <- list(user=username)
   if (!missing(prefix)) parameters$prefix <- prefix
 
-  # Submit a POST request to the hive and stop if an error is returned
+  # Submit a POST request and stop if an error is returned
   response <- stopIfHiveError(
     httpRequest(
       url=hiveURL("PasswordTokens"), method="POST", content=parameters,

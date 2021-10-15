@@ -2,7 +2,7 @@
 % Please edit documentation in R/stopIfHiveError.R
 \name{stopIfHiveError}
 \alias{stopIfHiveError}
-\title{Terminate if an HTTP response is hive error message}
+\title{Terminate if an HTTP response is an error message}
 \usage{
 stopIfHiveError(x)
 }
@@ -16,10 +16,10 @@ otherwise, the argument \code{x} is returned.
 }
 \description{
 This is a convenience function to terminate if the result of an HTTP request
-contains a hive error message.
+contains an error message.
 }
 \details{
-The hive may return a JSON-encoded list containing a single element,
+The system may return a JSON-encoded list containing a single element,
 named \code{error}, containing an error message.  If so, it is extracted to
 an error message during termination (see below).
 }

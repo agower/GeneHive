@@ -12,8 +12,8 @@ hiveVariableDefinitionCollection(listData = list())
 \item{listData}{A list of hiveVariableDefinition objects}
 }
 \description{
-This class is the S4 representation of the hive
-VariableDefinitionCollection record type.
+This class is the S4 representation of the VariableDefinitionCollection
+record type.
 It is a container for the variables and metadata associated with a collection
 of variable definitions in an EntityClass record.
 }

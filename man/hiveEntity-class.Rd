@@ -6,7 +6,7 @@
 \alias{hiveEntity}
 \title{Class to contain Entity records}
 \description{
-This class is the S4 representation of the hive Entity record type.
+This class is the S4 representation of the Entity record type.
 It is a container for structured metadata and references to other GeneHive
 records.
 }

@@ -3,7 +3,7 @@
 
 #' @rdname hiveBase
 #' @name Hive base functions
-#' @title Add, delete, retrieve, update, or list hive record(s)
+#' @title Add, delete, retrieve, update, or list record(s)
 #' @description
 #' These functions attempt to add, retrieve, or update a GeneHive record, to
 #' delete a Group, EntityClass or Entity record, or to list GeneHive records of
@@ -150,14 +150,14 @@ hiveAdd <- function (
   } else {
     id.slot <- hiveSlotName(Class, "id")
     fields[[id.slot]] <- objectId(object)
-    # Check whether the object is already present in the hive
+    # Check whether the record already exists
     if (type == "Group") {
       object.exists <- fields[[id.slot]] %in% listGroups(con=con)
     } else {
       object.exists <- hiveExists(fields[[id.slot]], type, con)
     }
     if (object.exists) {
-      # If the object is already present in the hive, produce a warning
+      # If the record already exists, produce a warning
       if (type == "Entity") {
         warning(
           paste(fields$.class, "record", fields[[id.slot]], "already exists")
@@ -208,7 +208,7 @@ hiveAdd <- function (
         fields[[variable.id]] <- as.list(unname(fields[[variable.id]]))
       }
     }
-    # Submit a POST request to the hive and stop if an error is returned
+    # Submit a POST request and stop if an error is returned
     response <- stopIfHiveError(
       httpRequest(
         url=hiveURL(hiveApp(type)), method="POST",
@@ -378,7 +378,7 @@ hiveUpdate <- function (
       type, "record"
     )
   }
-  # Check to see if the record exists in the hive; if not, exit with an error
+  # Check to see if the record exists; if not, exit with an error
   object <- try(
     do.call(hiveGet, c(type=type, fields[id.slot], con=con)), silent=TRUE
   )
@@ -510,8 +510,8 @@ hiveUpdate <- function (
 
     if (type == "User") {
       # If a new password was provided, check to make sure that it is new
-      # (user@password will always be NA because the hive does not return
-      # passwords as part of User records)
+      # (user@password will always be NA because passwords are never returned
+      # as part of User records)
       if (!is.null(updates$password)) {
         if (checkPassword(fields[[id.slot]], updates$password)) {
           updates$password <- NULL
@@ -544,8 +544,8 @@ hiveUpdate <- function (
     # Create list of updates
     update.list <- c(fields[id.slot], updates)
     # For User records, ensure the 'group' and 'groups' fields are present;
-    # the 'group' field is required by hive for updates, and the 'groups' field
-    # will be overwritten by the hive if omitted
+    # the 'group' field is required for updates, and the 'groups' field
+    # of the record will be overwritten by if omitted
     # Note: the [[ operator must be used for the first command instead of $,
     #       which uses partial matching, and so update.list$group will match on
     #       update.list$groups if it exists
@@ -559,7 +559,7 @@ hiveUpdate <- function (
     }
     if (type == "Entity") {
       # For Entity records, ensure '.permissions' field is present
-      # (required by hive for updates)
+      # (required for updates)
       if (is.null(update.list$.permissions)) {
         update.list$.permissions <- objectPermissions(object)
       }
@@ -689,7 +689,7 @@ hiveList <- function (
         method="GET", curl=con
       )
     )
-    # This workaround is needed until a bug is fixed in the hive: when an
+    # This workaround is needed until a bug is fixed in the back end: when an
     # Entity is returned as part of a listing operation and the user does not
     # have permission to read it, the '_class' field of the Entity is
     # mistakenly excluded
@@ -726,7 +726,7 @@ hiveList <- function (
     result[i] <- lapply(result[i], lapply, as, "character")
     if (type == "User") {
       # If type is 'User', remove the 'password' field, which will always be
-      # empty (the hive never returns passwords)
+      # empty (passwords are never returned)
       result$password <- NULL
     } else if (type == "WorkFileProperties") {
       # If type is 'WorkFileProperties', copy the unique ID into the row names

@@ -1,14 +1,14 @@
-#' @title Construct a hive API URL
+#' @title Construct an API URL
 #' @description
-#' This function constructs a URL from the base URL of the hive and any
-#' arguments (e.g., function names).
+#' This function constructs a URL from the API base URL and any arguments
+#' (e.g., function names).
 #' @param \dots
 #' Character strings, integers, and/or numeric values denoting items to be used
 #' to construct the path
 #' @param query
 #' An optional named list of strings that specify the query parameters
 #' @param hostname
-#' A character string specifying the hostname (IP address) of the hive;
+#' A character string specifying the hostname (IP address) of the API server;
 #' defaults to \code{getOption("GeneHive.hostname")}
 #' @param https
 #' A logical value specifying whether a secure HTTP connection should be used;
@@ -19,7 +19,7 @@
 #' If this argument is \code{NULL}, no port will be included in the URL
 #' (i.e., the default port will be used).
 #' @param api.base.path
-#' A character string specifying the base URL path to the hive
+#' A character string specifying the API base URL path
 #' @return
 #' A character string containing the specified API URL.
 #' @details

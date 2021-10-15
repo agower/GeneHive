@@ -87,7 +87,7 @@ importFeatureSets <- function (
   # Initialize a list of NULL values to hold the result
   result <- vector("list", length(sets))
 
-  # Add any FeatureSets that are already in the hive to the result
+  # Add any FeatureSets that are already present in the system to the result
   for (i in 1:length(sets)) {
     featureSet <- try(getEntity(objectId(sets[[i]])), silent=TRUE)
     if (!inherits(featureSet, "try-error")) {
@@ -160,11 +160,11 @@ importFeatureSets <- function (
         # Otherwise, use the description extracted from the file
         arglist[[name.field]] <- objectName(sets[[i]])
       }
-      # Add the FeatureSet to the hive
+      # Add the FeatureSet record
       if (verbose) {
         cat(
           sprintf(
-            "Adding FeatureSet '%s' ('%s') to the hive.\n",
+            "Adding FeatureSet '%s' ('%s').\n",
             objectId(sets[[i]]), arglist[[name.field]]
           )
         )

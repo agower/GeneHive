@@ -118,7 +118,7 @@ importWeightedFeatureSet <- function (
     }
   }
 
-  # Add the WeightedFeatureSet to the hive and return the result invisibly
+  # Add the WeightedFeatureSet record and return the result invisibly
   result <- addEntity(
     .class="WeightedFeatureSet",
     features=set@features, weights=set@weights, featureSpace=featureSpace, ...,

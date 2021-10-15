@@ -20,7 +20,7 @@ Defaults to an empty \code{hiveUserList}.}
 }}
 
 \seealso{
-Functions for working with Group records in the hive are described in
+Functions for working with Group records are described in
 \code{\link{Groups}}.
 }
 \author{

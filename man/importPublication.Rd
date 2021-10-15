@@ -2,7 +2,7 @@
 % Please edit documentation in R/importPublication.R
 \name{importPublication}
 \alias{importPublication}
-\title{Upload a Publication to the hive using a PubMed identifier}
+\title{Create a Publication record using a PubMed identifier}
 \usage{
 importPublication(
   PMID,

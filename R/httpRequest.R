@@ -5,8 +5,8 @@
 #' @title Submit an HTTP request
 #' @description
 #' This function uses \code{\link{curlPerform}} to carry out all low-level HTTP
-#' requests (i.e., API calls) for the hive, converting all input and output to
-#' and from JSON as specified.
+#' requests (i.e., API calls), converting all input and output to/from JSON as
+#' specified.
 #' @param url
 #' A character string specifying the URL to which an HTTP request will be
 #' submitted

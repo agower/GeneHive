@@ -32,10 +32,16 @@ with the record. Defaults to \code{""}.}
 
 \item{\code{permissions}}{A \code{\linkS4class{hivePermissions}} object specifying the permissions
 associated with the record. Defaults to read-only.}
+
+\item{\code{.creation_date}}{A character string specifying the time and date at which the record was
+created. Defaults to \code{""}.}
+
+\item{\code{.updated}}{A character string specifying the time and date at which the record was last
+updated. Defaults to \code{""}.}
 }}
 
 \seealso{
-Functions for working with EntityClass records in the hive are
+Functions for working with EntityClass records are
 described in \code{\link{EntityClasses}}.
 }
 \author{

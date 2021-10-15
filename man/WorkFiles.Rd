@@ -16,6 +16,7 @@ addWorkFile(
   fileType = file_ext(sub("\\\\.gz$", "", filename)),
   compress = TRUE,
   group,
+  storage,
   token,
   permissions = getOption("GeneHive.permissions"),
   con = hiveConnection(),
@@ -72,11 +73,13 @@ upload; if the contents of the \code{WorkFile} are already gzipped, this is
 ignored}
 
 \item{group}{A character string specifying the name of the \code{Group} associated with
-the \code{WorkFile}. If missing, the hive automatically uses the group
-belonging to the user uploading the \code{WorkFile}.}
+the \code{WorkFile}. If missing, the group belonging to the user uploading
+the \code{WorkFile} is automatically used by the system.}
+
+\item{storage}{A character string specifying the location in which the WorkFile is stored.}
 
 \item{token}{A character string specifying a token that can be used for password-free 
-authentication. Automatically created when a \code{WorkFile} is uploaded.}
+authentication. Automatically populated when a \code{WorkFile} is uploaded.}
 
 \item{permissions}{A \code{\linkS4class{hivePermissions}} object specifying the permissions to 
 be used when creating the record}
@@ -88,7 +91,7 @@ connection will be established}
 
 \item{id}{A \code{\linkS4class{hiveWorkFileID}} object specifying the unique
 identifier of a \code{WorkFileProperties} record.
-Automatically created when a \code{WorkFile} is uploaded.}
+Automatically populated when a \code{WorkFile} is uploaded.}
 
 \item{filenames}{A character vector specifying the full path to one or more files}
 

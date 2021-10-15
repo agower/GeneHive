@@ -86,7 +86,7 @@ addEntityClass <- function (
     )
   }
 
-  # Submit a POST request to the hive and stop if an error is returned
+  # Submit a POST request and stop if an error is returned
   response <- stopIfHiveError(
     httpRequest(
       url=hiveURL("EntityClasses"), method="POST", content=class.definition,
@@ -186,7 +186,7 @@ updateEntityClass <- function (
     )
   }
 
-  # Submit a PUT request to the hive and stop if an error is returned
+  # Submit a PUT request and stop if an error is returned
   response <- stopIfHiveError(
     httpRequest(
       url=hiveURL("EntityClasses", entity.class$name), method="PUT",

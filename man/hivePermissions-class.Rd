@@ -4,7 +4,7 @@
 \name{hivePermissions-class}
 \alias{hivePermissions-class}
 \alias{hivePermissions}
-\title{Class to contain permissions for a hive record}
+\title{Class to contain permissions for a record}
 \usage{
 hivePermissions(...)
 }

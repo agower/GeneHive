@@ -13,23 +13,28 @@ type.  It is a container for metadata about a given WorkFile.
 
 \describe{
 \item{\code{id}}{A \code{\linkS4class{hiveWorkFileID}} specifying the unique identifier of the
-WorkFile. Automatically created when the file is uploaded.}
+WorkFile. Automatically populated when the file is uploaded.}
 
 \item{\code{hash}}{A character string specifying the MD5 checksum of the file.
-Automatically created when the file is uploaded.}
+Automatically populated when the file is uploaded.}
 
 \item{\code{creator}}{A character string specifying the \code{username} of the User
-associated with the record. Automatically created when the file is uploaded.}
+associated with the record. Automatically populated when the file is uploaded.}
 
 \item{\code{group}}{A character string specifying the \code{name} of the Group associated
-with the record. Automatically created when the file is uploaded.}
+with the record. Automatically populated when the file is uploaded.}
+
+\item{\code{storage}}{A character string specifying the location in which the WorkFile is stored.
+This is supplied by the user when the file is uploaded.}
 
 \item{\code{creatorJobRun}}{A character string specifying the name of a JobRun associated with the
 WorkFile. (Not currently used.)
-Automatically created when the file is uploaded.}
+Automatically populated when the file is uploaded.}
 
 \item{\code{originalName}}{A character string specifying the original name of the file.
-Automatically created when the file is uploaded.}
+Automatically populated when the file is uploaded.}
+
+\item{\code{originalModifiedTime}}{A numeric value specifying the original timestamp of the file.}
 
 \item{\code{fileType}}{A character string specifying the type (e.g., extension) of the file.
 Created when the file is uploaded.}
@@ -41,21 +46,21 @@ trashed. Defaults to \code{FALSE}.}
 temporary. Defaults to \code{FALSE}.}
 
 \item{\code{creationDatetime}}{A character string specifying the date and time that the record was created.
-Automatically created when the file is uploaded.}
+Automatically populated when the file is uploaded.}
 
 \item{\code{length}}{A numeric value specifying the length of the file in bytes.
-Automatically created when the file is uploaded.}
+Automatically populated when the file is uploaded.}
 
 \item{\code{token}}{A character string specifying a token that can be used for password-free
-authentication. Automatically created when the file is uploaded.}
+authentication. Automatically populated when the file is uploaded.}
 
 \item{\code{permissions}}{A \code{\linkS4class{hivePermissions}} object specifying the permissions
 associated with the record. Defaults to read-only.}
 }}
 
 \seealso{
-Functions for working with WorkFileProperties records in a GeneHive
-are described in \code{\link{WorkFileProperties}}.
+Functions for working with WorkFileProperties records are described in
+\code{\link{WorkFileProperties}}.
 }
 \author{
 Adam C. Gower \email{agower@bu.edu}

@@ -7,7 +7,7 @@
 \alias{hiveGet}
 \alias{hiveUpdate}
 \alias{hiveList}
-\title{Add, delete, retrieve, update, or list hive record(s)}
+\title{Add, delete, retrieve, update, or list record(s)}
 \usage{
 hiveAdd(
   con = hiveConnection(),

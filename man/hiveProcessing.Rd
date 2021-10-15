@@ -35,7 +35,7 @@ defaults to \code{'Entity'}}
 These functions pre-process lists that will be converted to JSON during PUT
 or POST API calls, or post-process list objects converted from JSON in the
 HTTP response body of API calls.  These are utility functions that are
-called by other hive functions, and should not be called directly by the
+called by other functions, and should not be called directly by the
 user.
 }
 \author{

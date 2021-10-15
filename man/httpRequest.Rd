@@ -47,8 +47,8 @@ Otherwise:
 }
 \description{
 This function uses \code{\link{curlPerform}} to carry out all low-level HTTP
-requests (i.e., API calls) for the hive, converting all input and output to
-and from JSON as specified.
+requests (i.e., API calls), converting all input and output to/from JSON as
+specified.
 }
 \details{
 \code{\link{curlPerform}} is used in place of \code{\link{getURL}}

@@ -1,13 +1,13 @@
 #' @import rjson
 
-#' @title Terminate if an HTTP response is hive error message
+#' @title Terminate if an HTTP response is an error message
 #' @description
 #' This is a convenience function to terminate if the result of an HTTP request
-#' contains a hive error message.
+#' contains an error message.
 #' @param x
 #' A variable returned by \code{\link{httpRequest}}
 #' @details
-#' The hive may return a JSON-encoded list containing a single element,
+#' The system may return a JSON-encoded list containing a single element,
 #' named \code{error}, containing an error message.  If so, it is extracted to
 #' an error message during termination (see below).
 #' @return
@@ -27,7 +27,7 @@ stopIfHiveError <- function (x)
       http.response <- tryCatch(
         fromJSON(http.response), error = function (x) http.response
       )
-      # The hive may return a list of one element, named 'error',
+      # The system may return a list of one element, named 'error',
       # if there is an HTTP error
       if (is.list(http.response)) {
         if (identical(names(http.response), "error")) {

@@ -15,7 +15,7 @@
 #' @param id
 #' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique
 #' identifier of a \code{WorkFileProperties} record.
-#' Automatically created when a \code{WorkFile} is uploaded.
+#' Automatically populated when a \code{WorkFile} is uploaded.
 #' @param filename
 #' A character string specifying the full path to a file; for
 #' \code{importWorkFileArchive}, this must be a .tar, .tgz, .tar.gz or .zip file
@@ -32,11 +32,13 @@
 #' ignored
 #' @param group
 #' A character string specifying the name of the \code{Group} associated with
-#' the \code{WorkFile}. If missing, the hive automatically uses the group
-#' belonging to the user uploading the \code{WorkFile}.
+#' the \code{WorkFile}. If missing, the group belonging to the user uploading
+#' the \code{WorkFile} is automatically used by the system.
+#' @param storage
+#' A character string specifying the location in which the WorkFile is stored.
 #' @param token
 #' A character string specifying a token that can be used for password-free 
-#' authentication. Automatically created when a \code{WorkFile} is uploaded.
+#' authentication. Automatically populated when a \code{WorkFile} is uploaded.
 #' @param \dots
 #' Additional arguments specifying \code{WorkFileProperties} fields on which to 
 #' limit a listing
@@ -94,7 +96,7 @@
 addWorkFile <- function (
   filename,
   fileType = file_ext(sub("\\.gz$", "", filename)), compress = TRUE,
-  group, token, permissions = getOption("GeneHive.permissions"),
+  group, storage, token, permissions = getOption("GeneHive.permissions"),
   con = hiveConnection(), verbose = getOption("GeneHive.verbose")
 )
 {
@@ -125,6 +127,11 @@ addWorkFile <- function (
     }
     if (!is.element(group, listGroups(con))) {
       stop(paste(sQuote(group), "is not a valid Group"))
+    }
+  }
+  if (!missing(storage)) {
+    if (!(is.character(storage) && length(storage) == 1)) {
+      stop("Argument 'storage' must be a character vector of length 1")
     }
   }
   if (!missing(token)) {
@@ -222,14 +229,14 @@ addWorkFile <- function (
       sprintf("Uploading contents of file '%s'.\n", basename(filename))
     )
 
-    # Submit a POST request to the hive and stop if an error is returned
+    # Submit a POST request and stop if an error is returned
+    query <- list(originalName=originalName, fileType=fileType)
+    if (!missing(group)) query$group <- group
+    if (!missing(storage)) query$storage <- storage
+    if (!missing(token)) query$token <- token
     response <- stopIfHiveError(
       httpRequest(
-        url=hiveURL(
-          "WorkFiles",
-          query=list(originalName=originalName, fileType=fileType)
-        ),
-        method="POST", content=buf,
+        url=hiveURL("WorkFiles", query=query), method="POST", content=buf,
         httpheader=c(
           "Accept"="application/json", 
           "Content-Type"="application/octet-stream"
@@ -281,8 +288,7 @@ getWorkFile <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  # Try retrieving the WorkFile from the hive,
-  # and exit with an error message if unsuccessful
+  # Try retrieving the WorkFile, and exit with an error message if unsuccessful
   if (verbose) {
     cat(
       sprintf("Downloading WorkFile '%s' to local file '%s'.\n", id, filename)
@@ -380,7 +386,7 @@ importWorkFiles <- function (
 
   if (verbose) cat("Processing file(s):", sQuote(filenames), sep="\n")
 
-  # Determine whether each file is present in the hive, and if not, add it
+  # Determine whether each file is present, and if not, add it
   result <- list()
   for (filename in filenames) {
     workFile_record <- addWorkFile(filename, con=con, verbose=FALSE)
@@ -469,7 +475,7 @@ storeObjectAsWorkFile <- function (
   temp_filename <- tempfile()
   on.exit(unlink(temp_filename, force=TRUE))
   saveRDS(x, file=temp_filename)
-  # Try to add the temporary RDS file to the hive as a WorkFile
+  # Try to add the temporary RDS file as a WorkFile
   result <- suppressWarnings(
     addWorkFile(
       temp_filename, fileType="rds",

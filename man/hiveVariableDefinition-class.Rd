@@ -6,7 +6,7 @@
 \alias{hiveVariableDefinition}
 \title{Class to contain VariableDefinition records}
 \description{
-This class is the S4 representation of the hive VariableDefinition
+This class is the S4 representation of the VariableDefinition
 record type.  It is a container for a single variable associated with an
 EntityClass record.
 }

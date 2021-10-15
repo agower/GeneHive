@@ -7,7 +7,7 @@
 #' These functions pre-process lists that will be converted to JSON during PUT
 #' or POST API calls, or post-process list objects converted from JSON in the
 #' HTTP response body of API calls.  These are utility functions that are
-#' called by other hive functions, and should not be called directly by the
+#' called by other functions, and should not be called directly by the
 #' user.
 #' @param x
 #' A list object (for \code{hivePreprocess}, must be named)
@@ -70,9 +70,9 @@ hivePostprocess <- function (
 
   # If the list has no names, it represents a (potentially empty) list of
   # records, i.e., this function was called from hiveList();
-  # otherwise, the list represents a single hive record
+  # otherwise, the list represents a single record
   hiveList.call <- is.null(names(x))
-  # For convenience, a single hive record is converted to a list of length 1
+  # For convenience, a single record is converted to a list of length 1
   # prior to processing
   result <- if (hiveList.call) x else list(x)
 

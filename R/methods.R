@@ -794,11 +794,11 @@ setMethod(
 # show #########################################################################
 
 #' @rdname show-methods
-#' @name Hive S4 show methods
-#' @title Methods for showing hive S4 objects
+#' @name S4 show methods
+#' @title Methods for showing S4 objects
 #' @description
-#' These methods show the contents of various hive-related S4 objects in a
-#' human-readable format.
+#' These methods show the contents of various S4 objects in a human-readable
+#' format.
 #' @param object
 #' An R object
 #' @section Methods:

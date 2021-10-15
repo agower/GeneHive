@@ -4,7 +4,7 @@
 #' @export
 #' @rdname importPublication
 #' @name importPublication
-#' @title Upload a Publication to the hive using a PubMed identifier
+#' @title Create a Publication record using a PubMed identifier
 #' @description
 #' This function adds or updates a single Publication record using metadata
 #' associated with a PubMed identifier.

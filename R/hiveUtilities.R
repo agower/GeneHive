@@ -2,15 +2,15 @@
 
 #' @rdname hiveUtilities
 #' @name Hive utility functions
-#' @title Utility functions used by other hive functions
+#' @title Utility functions used by other functions
 #' @description
 #' These convenience functions perform low-level tasks used by other GeneHive
 #' functions.
 #' @param type
-#' A character string representing a hive record type;
+#' A character string representing a record type;
 #' defaults to \code{"Entity"}
 #' @param id
-#' A character string specifying a hive record identifier
+#' A character string specifying a record identifier
 #' @param con
 #' A \code{\linkS4class{hiveConnection}} object
 #' @param class
@@ -19,7 +19,7 @@
 #' Optional arguments; if argument \code{.class} is present,
 #' it will be used to determine S4 class if type = \code{"Entity"}
 #' @param Class
-#' A character string representing a hive S4 object class
+#' A character string representing an S4 object class
 #' @param attribute
 #' A character string representing an attribute (e.g., "id", "name") for which
 #' the corresponding slot name is desired

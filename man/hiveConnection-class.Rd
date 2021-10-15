@@ -4,7 +4,7 @@
 \name{hiveConnection-class}
 \alias{hiveConnection-class}
 \alias{hiveConnection}
-\title{Class to contain a hive connection handle}
+\title{Class to contain a connection handle for API calls}
 \usage{
 hiveConnection(
   username = getOption("GeneHive.username"),
@@ -32,7 +32,7 @@ This S4 class is a container for a \code{cURL} handle that allows connection
 to a GeneHive instance.
 
 This function creates a new \code{\linkS4class{hiveConnection}} object to
-establish a connection to the hive.
+be used for making API calls.
 }
 \section{Slots}{
 

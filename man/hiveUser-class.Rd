@@ -18,10 +18,16 @@ Defaults to \code{""}.}
 \item{\code{password}}{A character string specifying the password of the user.
 Defaults to \code{NA}.}
 
-\item{\code{group}}{A character string specifying the name of the Group associated with
+\item{\code{group}}{A character string specifying the name of the default Group associated with
+the user. Defaults to \code{""}.}
+
+\item{\code{groups}}{A character array specifying the name(s) of the Group(s) associated with
 the user. Defaults to \code{""}.}
 
 \item{\code{superuser}}{A logical value specifying whether the user is a superuser.
+Defaults to \code{FALSE}.}
+
+\item{\code{confirmed}}{A logical value specifying whether the user has been confirmed.
 Defaults to \code{FALSE}.}
 
 \item{\code{email}}{A character string specifying the email address of the user.
@@ -34,13 +40,16 @@ Defaults to \code{""}.}
 Defaults to \code{""}.}
 
 \item{\code{dateJoined}}{A character string specifying the date that the User record was
-created. Automatically populated by the hive.}
+created. Automatically populated when the record is created.}
+
+\item{\code{lastLogin}}{A character string specifying the timestamp of the User's last
+authentication. Automatically updated by the system.}
 
 \item{\code{untrashedFileUsage}}{A numeric value specifying the file usage of the user.
-Automatically populated by the hive.}
+Automatically updated by the system.}
 
 \item{\code{token}}{A character string specifying a token that can be used for password-free
-authentication. Automatically populated by the hive.}
+authentication. Automatically populated when the record is created.}
 
 \item{\code{active}}{A logical value specifying whether the user is active.
 Defaults to \code{FALSE}.}
@@ -53,8 +62,7 @@ Defaults to \code{FALSE}.}
     \code{name}.
   }
 }
-Functions for working with User records in a GeneHive are described in
-\code{\link{Users}}.
+Functions for working with User records are described in \code{\link{Users}}.
 }
 \author{
 Adam C. Gower \email{agower@bu.edu}

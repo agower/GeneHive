@@ -8,7 +8,7 @@
 \alias{hiveLabelFields}
 \alias{hiveS4Class}
 \alias{hiveSlotName}
-\title{Utility functions used by other hive functions}
+\title{Utility functions used by other functions}
 \usage{
 hiveApp(
   type = c("Entity", "EntityClass", "Group", "User", "WorkFileProperties")
@@ -36,10 +36,10 @@ hiveSlotName(
 )
 }
 \arguments{
-\item{type}{A character string representing a hive record type;
+\item{type}{A character string representing a record type;
 defaults to \code{"Entity"}}
 
-\item{id}{A character string specifying a hive record identifier}
+\item{id}{A character string specifying a record identifier}
 
 \item{con}{A \code{\linkS4class{hiveConnection}} object}
 
@@ -48,7 +48,7 @@ defaults to \code{"Entity"}}
 \item{\dots}{Optional arguments; if argument \code{.class} is present,
 it will be used to determine S4 class if type = \code{"Entity"}}
 
-\item{Class}{A character string representing a hive S4 object class}
+\item{Class}{A character string representing an S4 object class}
 
 \item{attribute}{A character string representing an attribute (e.g., "id", "name") for which
 the corresponding slot name is desired}
