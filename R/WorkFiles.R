@@ -13,8 +13,8 @@
 #' \code{WorkFile}s, or to test whether a character string represents a valid
 #' \code{WorkFile} identifier.
 #' @param id
-#' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique
-#' identifier of a \code{WorkFileProperties} record.
+#' A \code{\linkS4class{hiveWorkFileID}} object (or coercible to one)
+#' specifying the unique identifier of a \code{WorkFileProperties} record.
 #' Automatically populated when a \code{WorkFile} is uploaded.
 #' @param filename
 #' A character string specifying the full path to a file; for
@@ -150,10 +150,14 @@ addWorkFile <- function (
 
   if (!file.exists(filename)) {
     stop(paste("File", sQuote(filename), "does not exist"))
-  } else if (file_ext(filename) %in% c(".tar",".tar.gz",".tgz",".zip")) {
-    stop(
-      "File ", sQuote(filename),
-      " contains an archive and cannot be uploaded as a WorkFile"
+  }
+
+  if (file_ext(filename) %in% c(".tar",".tar.gz",".tgz",".zip")) {
+    warning(
+      paste(
+        "File", sQuote(filename), "contains an archive;",
+        "consider using importWorkFileArchive() instead."
+      )
     )
   }
 
@@ -164,7 +168,20 @@ addWorkFile <- function (
     readBin(con=filename, what="raw", n=file.info(filename)$size),
     error=readError
   )
-  if (isGzipped(filename, method="content")) {
+  if (isGzipped(filename, method="content") && file_ext(filename) == "gz") {
+    # Two identical files that are independently gzipped may result in
+    # non-identical .gz files, depending on the compression level and whether
+    # the file header includes the original filename or timestamp.
+    # For this reason, to avoid the storage of functionally duplicate WorkFiles,
+    # the hashes of .gz files are computed from their decompressed contents.
+    #
+    # This procedure is not applied to files with extensions other than .gz,
+    # even though they may be of formats that support native gzip compression
+    # (e.g., RDS); this is because such files are typically gzipped with a
+    # consistent compression level and do not contain a gzip file header,
+    # meaning that the same data is likely to produce the same compressed file
+    # regardless of its origin. 
+    # 
     # Note: gunzip() is used to decompress the file, even though it has
     #       already been read into memory, because:
     #       - memDecompress() does not work with standard gzip files
@@ -276,7 +293,10 @@ getWorkFile <- function (
     stop("Arguments 'id' and 'filename' are required")
   }
   if (!is(id, "hiveWorkFileID")) {
-    stop("Argument 'id' must be a hiveWorkFileID object")
+    id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+    if (inherits(id, "try-error")) {
+      stop("Argument 'id' must be a hiveWorkFileID object or coercible to one")
+    }
   }
   if (!(is.character(filename) && length(filename) == 1)) {
     stop("Argument 'filename' must be a character vector of length 1")
@@ -335,7 +355,10 @@ getWorkFileAsObject <- function (
   # Check arguments for errors
   if (missing(id)) stop("Argument 'id' is required")
   if (!is(id, "hiveWorkFileID")) {
-    stop("Argument 'id' must be a hiveWorkFileID object")
+    id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+    if (inherits(id, "try-error")) {
+      stop("Argument 'id' must be a hiveWorkFileID object or coercible to one")
+    }
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")
@@ -496,7 +519,10 @@ validWorkFileId <- function (id, con=hiveConnection())
   # Check arguments for errors
   if (missing(id)) stop("Argument 'id' is required")
   if (!is(id, "hiveWorkFileID")) {
-    stop("Argument 'id' must be a hiveWorkFileID object")
+    id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+    if (inherits(id, "try-error")) {
+      stop("Argument 'id' must be a hiveWorkFileID object or coercible to one")
+    }
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")

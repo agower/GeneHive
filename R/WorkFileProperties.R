@@ -6,8 +6,8 @@
 #' These functions attempt to retrieve a \code{WorkFileProperties} record
 #' or to list \code{WorkFileProperties} records.
 #' @param id
-#' A \code{\linkS4class{hiveWorkFileID}} object specifying the unique identifier
-#' of a \code{WorkFileProperties} record.
+#' A \code{\linkS4class{hiveWorkFileID}} object (or coercible to one)
+#' specifying the unique identifier of a \code{WorkFileProperties} record.
 #' Automatically populated when a \code{WorkFile} is uploaded.
 #' @param \dots
 #' Additional arguments specifying fields of the \code{WorkFileProperties}
@@ -56,11 +56,11 @@
 getWorkFileProperties <- function (id, con=hiveConnection())
 {
   # Check arguments for errors
-  if (!((is.character(id) && length(id) == 1) || is(id, "WorkFileID"))) {
-    stop(
-      "Argument 'id' must be a character vector of length 1 ",
-      "or a WorkFileID"
-    )
+  if (!is(id, "hiveWorkFileID")) {
+    id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+    if (inherits(id, "try-error")) {
+      stop("Argument 'id' must be a hiveWorkFileID object or coercible to one")
+    }
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")
@@ -81,11 +81,11 @@ updateWorkFileProperties <- function (
   id, ..., con=hiveConnection(), verbose=getOption("GeneHive.verbose")
 )
 {
-  if (!((is.character(id) && length(id) == 1) || is(id, "WorkFileID"))) {
-    stop(
-      "Argument 'id' must be a character vector of length 1 ",
-      "or a WorkFileID"
-    )
+  if (!is(id, "hiveWorkFileID")) {
+    id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+    if (inherits(id, "try-error")) {
+      stop("Argument 'id' must be a hiveWorkFileID object or coercible to one")
+    }
   }
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")

@@ -2,7 +2,7 @@
 {
   # Set global options used by functions in the GeneHive package
   options(
-    GeneHive.api.base.path = "api/v2",
+    GeneHive.api.base.path = Sys.getenv("HIVE_API_BASE_PATH"),
     GeneHive.hashing.algorithm = "md5",
     GeneHive.hostname = Sys.getenv("HIVE_HOSTNAME"),
     GeneHive.https = as.logical(toupper(Sys.getenv("HIVE_HTTPS"))),
@@ -24,6 +24,9 @@
   )
   # If any environment variables were not set (or logical variables were not set
   # properly), revert to default settings
+  if (getOption("GeneHive.api.base.path") == "") {
+    options(GeneHive.api.base.path = "api/v2")
+  }
   if (getOption("GeneHive.hostname") == "") {
     options(GeneHive.hostname = "localhost")
   }

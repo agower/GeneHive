@@ -19,20 +19,21 @@
 #' If this argument is \code{NULL}, no port will be included in the URL
 #' (i.e., the default port will be used).
 #' @param api.base.path
-#' A character string specifying the API base URL path
+#' A character string specifying the API base URL path;
+#' defaults to \code{getOption("GeneHive.api.base.path")}
 #' @return
 #' A character string containing the specified API URL.
-#' @details
-#' On package startup, the following default options are used if the
-#' corresponding environment variables are not set:
-#' \describe{
-#'   \item{GeneHive.hostname}{\code{"localhost"}}
-#'   \item{GeneHive.https}{\code{TRUE}}
-#'   \item{GeneHive.port}{\code{NULL} (i.e., use the default port)}
-#' }
 #' @seealso
-#' The function \code{\link{buildQueryString}} is used to create a query string
-#' from the \code{query} argument.
+#' \itemize{
+#'   \item{
+#'     The \code{.onLoad()} function specifies the default options if the
+#'     corresponding environment variables are not set.
+#'   }
+#'   \item{
+#'     The function \code{\link{buildQueryString}} is used to create a query
+#'     string from the \code{query} argument.
+#'   }
+#' }
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 hiveURL <- function (

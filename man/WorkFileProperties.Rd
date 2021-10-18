@@ -27,8 +27,8 @@ listWorkFileProperties(
 listWorkFiles(..., isTrashed = FALSE, con = hiveConnection(), simplify = TRUE)
 }
 \arguments{
-\item{id}{A \code{\linkS4class{hiveWorkFileID}} object specifying the unique identifier
-of a \code{WorkFileProperties} record.
+\item{id}{A \code{\linkS4class{hiveWorkFileID}} object (or coercible to one)
+specifying the unique identifier of a \code{WorkFileProperties} record.
 Automatically populated when a \code{WorkFile} is uploaded.}
 
 \item{con}{A \code{\linkS4class{hiveConnection}} object;

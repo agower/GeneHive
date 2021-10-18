@@ -87,11 +87,14 @@ hiveExists <- function (
         )
       }
     } else if (type == "WorkFileProperties") {
-      if (!is(id, "WorkFileID")) {
-        stop(
-          "When type == ", sQuote(type), ", ",
-          "argument 'id' must be a character vector of length 1 or a WorkFileID"
-        )
+      if (!is(id, "hiveWorkFileID")) {
+        id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
+        if (inherits(id, "try-error")) {
+          stop(
+            "When type == ", sQuote(type), ", ",
+            "argument 'id' must be a hiveWorkFileID object or coercible to one"
+          )
+        }
       }
     } else {
       stop(
