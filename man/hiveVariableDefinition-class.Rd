@@ -26,7 +26,7 @@ Defaults to \code{""}.  May take the value \code{'C'} (Code),
 or \code{'W'} (WorkFile).}
 
 \item{\code{codes}}{A character vector specifying the allowed values that the variable may take
-(if \code{type} is \code{'C'}).
+(if \code{type} is \code{'C'}), named with the description of each code.
 Defaults to an empty vector.}
 
 \item{\code{entity_class_name}}{A character string specifying the name of the EntityClass that the
