@@ -1037,7 +1037,7 @@ hiveWeightedFeatureSetEntity <- setClass(
 )
 
 hiveBiomolecularSampleEntity <- setClass(
-  "hiveEntityBiomolecularSampleEntity", contains="hiveEntity"
+  "hiveBiomolecularSampleEntity", contains="hiveEntity"
 )
 hiveInstrumentEntity <- setClass(
   "hiveInstrumentEntity", contains="hiveEntity"
