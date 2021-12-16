@@ -12,27 +12,27 @@
 hiveAdd(
   con = hiveConnection(),
   type = c("Entity", "Group", "User"),
-  ...,
+  fields,
   verbose = getOption("GeneHive.verbose")
 )
 
 hiveDelete(
   con = hiveConnection(),
   type = c("Entity", "EntityClass", "Group"),
-  ...,
+  id,
   verbose = getOption("GeneHive.verbose")
 )
 
 hiveGet(
   con = hiveConnection(),
   type = c("Entity", "EntityClass", "User", "WorkFileProperties"),
-  ...
+  id
 )
 
 hiveUpdate(
   con,
   type = c("Entity", "User", "WorkFileProperties"),
-  ...,
+  fields,
   append = TRUE,
   verbose = getOption("GeneHive.verbose")
 )
@@ -40,7 +40,7 @@ hiveUpdate(
 hiveList(
   con,
   type = c("Entity", "EntityClass", "Group", "User", "WorkFileProperties"),
-  ...,
+  fields = list(),
   simplify = TRUE
 )
 }
@@ -50,13 +50,16 @@ hiveList(
 \item{type}{A character string specifying the type of the record;
 defaults to \code{'Entity'}}
 
-\item{\dots}{Additional arguments specifying the unique identifier field of the record to
-be added, deleted, retrieved or updated (see \code{\link{hiveSlotName}}),
+\item{fields}{A list of arguments specifying the unique identifier field of the record to
+be updated (see \code{\link{hiveSlotName}}),
 and/or any other fields to add or update or on which to limit a listing.
-Note: when adding or listing Entity records, \dots must always include a
-\code{.class} argument.}
+Note: when adding or listing Entity records,
+\code{fields} must always include a \code{.class} argument.}
 
 \item{verbose}{A logical value specifying whether messages should be printed}
+
+\item{id}{A vector of length 1 specifying the unique identifier field of the record to
+be deleted or retrieved}
 
 \item{append}{A logical value specifying whether to append new elements to array slots
 (rather than replace them); defaults to \code{TRUE}}
