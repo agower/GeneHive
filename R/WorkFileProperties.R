@@ -95,7 +95,8 @@ updateWorkFileProperties <- function (
   }
 
   hiveUpdate(
-    con, type="WorkFileProperties", id=as.character(id), ..., verbose=verbose
+    con, type="WorkFileProperties", list(id=as.character(id), ...),
+    verbose=verbose
   )
 }
 
@@ -115,7 +116,7 @@ listWorkFileProperties <- function (
   arglist <- list(con=con, type="WorkFileProperties", simplify=simplify, ...)
   # If isTrashed is set to TRUE or FALSE, limit the result accordingly;
   # otherwise, return all results regardless of trashed status
-  if (!is.na(isTrashed)) arglist$isTrashed <- isTrashed
+  if (!is.na(isTrashed)) arglist$fields <- list(isTrashed = isTrashed)
   do.call(hiveList, args=arglist)
 }
 #' @export

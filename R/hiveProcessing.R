@@ -46,7 +46,7 @@ hivePreprocess <- function (x)
   # conversion to JSON
   x <- rapply(
     x, f=as, Class="character",
-    classes=c("hiveWorkFileID", "UUID"),
+    classes=c("hiveDate", "hiveWorkFileID", "UUID"),
     how="replace"
   )
   x <- rapply(
@@ -94,9 +94,14 @@ hivePostprocess <- function (
     if (type == "EntityClass") {
       # Create the list of Variable definitions
       for (j in seq_along(record$variables)) {
+        # Type 'C' (Code) variables are stored as named vector,
+        # where the names and elements are inverted
+        # from those in the EntityClass definition
         if (!is.null(record$variables[[j]]$codes)) {
-          record$variables[[j]]$codes <- names(
-            unlist(record$variables[[j]]$codes)
+          record$variables[[j]]$codes <- unlist(record$variables[[j]]$codes)
+          record$variables[[j]]$codes <- setNames(
+            object=names(record$variables[[j]]$codes),
+            nm=record$variables[[j]]$codes
           )
         }
         record$variables[[j]] <- do.call(
@@ -109,7 +114,10 @@ hivePostprocess <- function (
       )
       # Create hivePermissions object
       record$permissions <- do.call(hivePermissions, args=record$permissions)
-    } else if (type == "Entity") {
+      # Coerce character strings to hiveDate objects
+      record$.creation_date <- as(record$.creation_date, "hiveDate")
+      record$.updated <- as(record$.updated, "hiveDate")
+    } else {
       # For each remaining field, populate the slot
       for (slot.name in names(record)) {
         to.class <- slots[slot.name]
@@ -119,6 +127,20 @@ hivePostprocess <- function (
             record[[slot.name]] <- UUIDparse(record[[slot.name]])[[1]]
           } else if (to.class == "UUIDList") {
             record[[slot.name]] <- UUIDparse(as.character(record[[slot.name]]))
+          } else if (extends(to.class, "SimpleList")) {
+            if (length(record[[slot.name]])) {
+              record[[slot.name]] <- do.call(
+                to.class,
+                args = list(
+                  listData = mapply(
+                    getClass(to.class)@prototype@elementType,
+                    record[[slot.name]], SIMPLIFY=FALSE
+                  )
+                )
+              )
+            } else {
+              record[[slot.name]] <- do.call(to.class, args=list())
+            }
           } else {
             # For remaining slots, use whichever comes first:
             # 1. an appropriate coercion method
@@ -149,21 +171,6 @@ hivePostprocess <- function (
           }
         }
       }
-    } else if (type == "Group") {
-      # Coerce 'users' field to hiveUserList
-      if (length(record$users)) {
-        # Note: cannot pass function 'hiveUser' to mapply(), since it cannot
-        #       be recycled; must pass string "hiveUser" instead, which can be
-        record$users <- hiveUserList(
-          mapply(do.call, "hiveUser", args=record$users)
-        )
-      } else {
-        record$users <- hiveUserList()
-      }
-    } else if (type == "WorkFileProperties") {
-      # Coerce fields to S4 objects as necessary
-      record$id <- hiveWorkFileID(record$id)
-      record$permissions <- do.call(hivePermissions, args=record$permissions)
     }
     # Create the object, using a constructor (if one exists)
     # or new() (if one does not)

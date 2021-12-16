@@ -58,7 +58,7 @@ addGroup <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  hiveAdd(con, type="Group", name=name, verbose=verbose)
+  hiveAdd(con, type="Group", fields=list(name=name), verbose=verbose)
 }
 
 #' @export
@@ -79,7 +79,7 @@ deleteGroup <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  hiveDelete(con, type="Group", name=name, verbose=verbose)
+  hiveDelete(con, type="Group", id=name, verbose=verbose)
 }
 
 #' @export

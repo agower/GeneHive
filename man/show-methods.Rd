@@ -2,6 +2,7 @@
 % Please edit documentation in R/methods.R
 \name{S4 show methods}
 \alias{S4 show methods}
+\alias{show,hiveDate-method}
 \alias{show,hiveEntity-method}
 \alias{show,hiveEntityList-method}
 \alias{show,hiveEntityClass-method}
@@ -11,6 +12,8 @@
 \alias{show,hiveWorkFileProperties-method}
 \title{Methods for showing S4 objects}
 \usage{
+\S4method{show}{hiveDate}(object)
+
 \S4method{show}{hiveEntity}(object)
 
 \S4method{show}{hiveEntityList}(object)
@@ -39,6 +42,7 @@ format.
 
 Class-specific methods exist for:
 \itemize{
+  \item \code{\linkS4class{hiveDate}}
   \item \code{\linkS4class{hiveEntity}}
   \item \code{\linkS4class{hiveEntityList}}
   \item \code{\linkS4class{hiveEntityClass}}

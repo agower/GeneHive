@@ -114,6 +114,14 @@ setAs(
 #' vice versa.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
+# Note: as.POSIXct() cannot accept "%Z" as input in the format string
+setAs(
+  from="character", to="hiveDate",
+  def=function (from) {
+    tz <- getOption("GeneHive.timezone")
+    hiveDate(as.POSIXct(from, tz=tz, format=paste("%a %b %d %T", tz, "%Y")))
+  }
+)
 setAs(
   from="character", to="hiveFeatureSetEntity",
   def=function (from) hiveFeatureSetEntity(features=from)
@@ -128,6 +136,25 @@ setAs(
     new("hiveWorkFileIDList", listData=lapply(from, hiveWorkFileID))
   }
 )
+
+setAs(
+  from="Date", to="hiveDate",
+  def=function (from) hiveDate(as.POSIXct(from))
+)
+
+setAs(
+  from="hiveDate", to="character",
+  def=function (from) {
+    format(from, tz=getOption("GeneHive.timezone"), "%a %b %d %T %Z %Y")
+  }
+)
+as.character.hiveDate <- function (from) as(from, "character")
+
+setAs(
+  from="hiveDate", to="Date",
+  def=function (from) as.Date(format(from, "%F"))
+)
+as.Date.hiveDate <- function (from) as(from, "Date")
 
 #setAs(
 #  from="hiveEntitySet", to="UUIDList",
@@ -180,6 +207,11 @@ setAs(
   def = function (from) as.character(unlist(from@listData))
 )
 
+setAs(
+  from="numeric", to="hiveDate",
+  def=function (from) hiveDate(as.POSIXct(from, origin="1970-01-01", tz="UTC"))
+)
+
 #setAs(
 #  from="numeric", to="hiveWeightedEntitySet",
 #  def = function (from) hiveWeightedEntitySet(ids=names(from), weights=from)
@@ -202,6 +234,11 @@ setAs(
   def = function (from) {
     new("hiveWorkFileIDList", listData=lapply(from, hiveWorkFileID))
   }
+)
+
+setAs(
+  from="POSIXct", to="hiveDate",
+  def=function (from) hiveDate(from)
 )
 
 #' @rdname coerce-S4-list-method
@@ -615,7 +652,9 @@ setMethod(
         )
         for (key.field in key.fields) {
           key <- slot(.Object, key.field)
-          if (class(key) == "hiveWorkFileID") {
+          if (class(key) == "hiveDate") {
+            keys.present[[key.field]] <- length(key) > 0
+          } else if (class(key) == "hiveWorkFileID") {
             keys.present[[key.field]] <- nchar(key) > 0
           } else if (class(key) == "UUID") {
             keys.present[[key.field]] <- !isNil(key)
@@ -633,7 +672,7 @@ setMethod(
             paste(
               "A UUID cannot be computed for an Entity record of class",
               sQuote(.Object@.class),
-              "if the following key slots are empty:",
+               "if any of the following key slots are empty:",
               paste(sQuote(names(which(!keys.present))), collapse=", ")
             )
           )
@@ -804,6 +843,7 @@ setMethod(
 #' @section Methods:
 #' Class-specific methods exist for:
 #' \itemize{
+#'   \item \code{\linkS4class{hiveDate}}
 #'   \item \code{\linkS4class{hiveEntity}}
 #'   \item \code{\linkS4class{hiveEntityList}}
 #'   \item \code{\linkS4class{hiveEntityClass}}
@@ -817,6 +857,15 @@ setMethod(
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 #' @export
+#' @aliases show,hiveDate-method
+setMethod(
+  "show",
+  signature("hiveDate"),
+  function (object) cat(as(object, "character"), sep="\n")
+)
+
+#' @export
+#' @rdname show-methods
 #' @aliases show,hiveEntity-method
 setMethod(
   "show",
@@ -917,9 +966,9 @@ setMethod(
     # Print metadata
     cat(
       "Created by", objectCreator(object),
-      "on", objectCreationDate(object), "\n"
+      "on", as.character(objectCreationDate(object)), "\n"
     )
-    cat("Last updated:", objectLastUpdated(object), "\n")
+    cat("Last updated:", as.character(objectLastUpdated(object)), "\n")
     cat("Owned by:", objectOwner(object), "\n")
     cat("Associated with group:", objectGroup(object), "\n")
     show(objectPermissions(object))
@@ -940,17 +989,24 @@ setMethod(
       cat("List of", length(object), entity.class, "records\n")
       # Retrieve any label fields from the Entity class definition
       label.fields <- hiveLabelFields(entity.class)
+      label.header <- "Label"
       # If none exist, use key fields instead
       if (length(label.fields) == 0) {
         label.fields <- hiveKeyFields(entity.class)
+        label.header <- "Keys"
       }
       if (length(label.fields) > 0) {
         # Convenience function to extract vector of specified slots from object
-        slots <- function (object, names) mapply(slot, list(object), names)
+        slots <- function (object, names) {
+          mapply(slot, list(object), names, SIMPLIFY=FALSE)
+        }
         labels <- sapply(
-          lapply(object, slots, label.fields), paste, collapse=" "
+          lapply(lapply(object, slots, label.fields), sapply, as, "character"),
+          paste, collapse=", "
         )
-        field.widths <- c(ID=36, Label=max(nchar(labels)))
+        field.widths <- c()
+        field.widths["ID"] <- 36
+        field.widths[label.header] <- max(nchar(labels))
         sprintf.fmt <- setNames(
           paste0("%-", field.widths, "s"), names(field.widths)
         )
@@ -962,7 +1018,7 @@ setMethod(
           cat("  ")
           cat(
             sprintf(sprintf.fmt["ID"], objectId(object[[i]])),
-            sprintf(sprintf.fmt["Label"], labels[i])
+            sprintf(sprintf.fmt[label.header], labels[i])
           )
           cat("\n")
         }
@@ -1020,9 +1076,9 @@ setMethod(
     # Print metadata
     cat(
       "Created by", objectCreator(object),
-      "on", objectCreationDate(object), "\n"
+      "on", as.character(objectCreationDate(object)), "\n"
     )
-    cat("Last updated:", objectLastUpdated(object), "\n")
+    cat("Last updated:", as.character(objectLastUpdated(object)), "\n")
     cat("Owned by:", objectOwner(object), "\n")
     cat("Associated with group:", objectGroup(object), "\n")
     show(objectPermissions(object))
@@ -1142,7 +1198,10 @@ setMethod(
     if (nchar(objectName(object))) {
       cat("as", sQuote(objectName(object)), "")
     }
-    cat("by", objectCreator(object), "on", objectCreationDate(object))
+    cat(
+      "by", objectCreator(object),
+      "on", as.character(objectCreationDate(object))
+    )
     cat("\n")
     cat("  Associated with group:", objectGroup(object))
     cat("\n")

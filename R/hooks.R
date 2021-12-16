@@ -1,3 +1,5 @@
+#' @importFrom utils packageVersion
+
 .onLoad <- function (libname, pkgname)
 {
   # Set global options used by functions in the GeneHive package
@@ -19,6 +21,7 @@
     ),
     GeneHive.port = as.integer(Sys.getenv("HIVE_PORT")),
     GeneHive.proxy = FALSE,
+    GeneHive.timezone = Sys.getenv("HIVE_TIMEZONE"),
     GeneHive.username = Sys.getenv("HIVE_USERNAME"),
     GeneHive.verbose = TRUE
   )
@@ -36,6 +39,9 @@
   if (is.na(getOption("GeneHive.port"))) {
     options(GeneHive.port = NULL)
   }
+  if (getOption("GeneHive.timezone") == "") {
+    options(GeneHive.timezone = "UTC")
+  }
   if (getOption("GeneHive.username") == "") {
     options(GeneHive.username = unname(Sys.info()["user"]))
   }
@@ -48,7 +54,9 @@
     "\n",
     "=========================================================================",
     "\n",
-    "Welcome to GeneHive.\n",
+    paste0(
+      "Welcome to ", pkgname, " (version ", packageVersion(pkgname), ").\n"
+    ),
     "========================================================================="
   )
 }

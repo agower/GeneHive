@@ -34,12 +34,6 @@ to a GeneHive instance.
 This function creates a new \code{\linkS4class{hiveConnection}} object to
 be used for making API calls.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{.Data}}{A \code{\linkS4class{CURLHandle}} object.}
-}}
-
 \section{Extends}{
 
 Directly extends class \code{\linkS4class{CURLHandle}}.

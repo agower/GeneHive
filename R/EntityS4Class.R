@@ -172,9 +172,11 @@ setEntityS4Class <- function (entityClassDef, where=.GlobalEnv)
 
   # Convenience vector to translate Entity class definition "types" to R classes
   type.classes <- c(
-    B="logical", C="factor", D="character", E="UUID", F="numeric", I="integer",
+    B="logical", C="factor", D="hiveDate", E="UUID", F="numeric", I="integer",
     S="character", T="character", V="UUID", W="hiveWorkFileID"
   )
+  # Convenience vector of atomic classes
+  atomicClasses <- c("character", "integer", "logical", "numeric")
 
   # Initialize argument list to setClass()
   Class <- paste0("hive", entityClassDef@name, "Entity")
@@ -189,18 +191,18 @@ setEntityS4Class <- function (entityClassDef, where=.GlobalEnv)
   for (i in seq_along(entityClassDef@variables)) {
     variable <- entityClassDef@variables[[i]]
     slot.class <- type.classes[variable@type]
-    if (slot.class %in% c("UUID", "hiveWorkFileID") & variable@is_array) {
+    if (slot.class %in% c("hiveWorkFileID", "UUID") & variable@is_array) {
       setClass.arglist$slots[variable@name] <- paste0(slot.class, "List")
     } else {
       setClass.arglist$slots[variable@name] <- slot.class
     }
-    if (is.element(slot.class, c("character", "integer", "numeric"))) {
+    if (slot.class %in% atomicClasses) {
       prototype.arglist[[variable@name]] <- vector(
         mode=slot.class, length=ifelse(variable@is_array, 0, 1)
       )
     } else if (slot.class == "factor") {
       prototype.arglist[[variable@name]] <- factor(levels=variable@codes)
-    } else if (slot.class %in% c("UUID", "hiveWorkFileID")) {
+    } else {
       prototype.arglist[[variable@name]] <- new(
         setClass.arglist$slots[variable@name]
       )

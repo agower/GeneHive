@@ -119,7 +119,7 @@ deleteEntityClass <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  hiveDelete(con, type="EntityClass", name=name, verbose=verbose)
+  hiveDelete(con, type="EntityClass", id=name, verbose=verbose)
 }
 
 #' @export
@@ -135,7 +135,7 @@ getEntityClass <- function (name, con=hiveConnection())
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  hiveGet(con, type="EntityClass", name=name)
+  hiveGet(con, type="EntityClass", id=name)
 }
 
 #' @export

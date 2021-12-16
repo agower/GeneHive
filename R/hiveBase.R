@@ -14,12 +14,15 @@
 #' @param type
 #' A character string specifying the type of the record;
 #' defaults to \code{'Entity'}
-#' @param \dots
-#' Additional arguments specifying the unique identifier field of the record to
-#' be added, deleted, retrieved or updated (see \code{\link{hiveSlotName}}),
+#' @param fields
+#' A list of arguments specifying the unique identifier field of the record to
+#' be updated (see \code{\link{hiveSlotName}}),
 #' and/or any other fields to add or update or on which to limit a listing.
-#' Note: when adding or listing Entity records, \dots must always include a
-#' \code{.class} argument.
+#' Note: when adding or listing Entity records,
+#' \code{fields} must always include a \code{.class} argument.
+#' @param id
+#' A vector of length 1 specifying the unique identifier field of the record to
+#' be deleted or retrieved
 #' @param append
 #' A logical value specifying whether to append new elements to array slots
 #' (rather than replace them); defaults to \code{TRUE}
@@ -80,7 +83,7 @@
 
 hiveAdd <- function (
   con=hiveConnection(), type=c("Entity", "Group", "User"),
-  ..., verbose=getOption("GeneHive.verbose")
+  fields, verbose=getOption("GeneHive.verbose")
 )
 {
   # Check arguments for errors
@@ -88,59 +91,41 @@ hiveAdd <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
+  if (!(is.list(fields) && length(fields))) {
+    stop("Argument 'fields' must be a list of nonzero length")
+  }
   if (!(is.logical(verbose) && length(verbose) == 1)) {
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
   # Determine the S4 object class of the output,
   # and if adding an Entity, stop if an Entity class was not specified
-  Class <- hiveS4Class(type, ...)
+  Class <- do.call(hiveS4Class, args=c(type=type, fields))
   if (Class == "hiveEntity") {
     stop(
-      "When adding Entity records, '...' must contain a valid '.class' argument"
+      "When adding Entity records, ",
+      "argument 'fields' must contain a valid '.class' argument"
     )
   }
-  # Extract the '...' argument to a named list
-  fields <- list(...)
   # If adding an Entity, refresh the local S4 class definition
   if (type == "Entity") refreshEntityS4Class(fields$.class, verbose=FALSE)
   slots <- getSlots(Class)
 
-  # Check to make sure that the '...' argument is named properly
-  # (This check produces a more informative error message than that returned by
-  # initialize())
-  # Note: allNames is used in the event that '...' contains >= 1 elements,
-  #       all of which are unnamed
+  # Check to make sure that the 'fields' argument is named properly
+  # (This check produces a more informative error message than initialize())
+  # Note: allNames is used in case all elements of 'fields' are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      "All arguments in '...' must be named, ",
+      "All arguments in argument 'fields' must be named, ",
       "and these names must correspond to valid ", Class, " object slots"
     )
   }
-  # Coerce all fields corresponding to S4 object slots to the appropriate class
-  for (i in seq_along(fields)) {
-    target.class <- slots[names(fields)[i]]
-    if (target.class == "UUID") {
-      if (is.character(fields[[i]])) {
-        fields[[i]] <- UUIDparse(fields[[i]])[[1]]
-      } else if (!is(fields[[i]], "UUID")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUID")
-      }
-    } else if (target.class == "UUIDList") {
-      if (is.list(fields[[i]])) {
-        fields[[i]] <- UUIDList(fields[[i]])
-      } else if (!is(fields[[i]], "UUIDList")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUIDList")
-      }
-    } else {
-      fields[[i]] <- as(fields[[i]], target.class)
-    }
-  }
-  # Create an S4 object from the fields, performing a recursive check to ensure
-  # that all of the data types, etc., are correct
-  # Note: for hiveEntity subclasses, this step will also automatically compute
-  # the ID of the object via initialize()
-  validObject(object <- do.call(new, c(Class=Class, fields)), complete=TRUE)
+
+  # Convert list of arguments to S4 object to ensure all arguments are valid
+  # and to coerce fields to proper classes
+  object <- listToHiveS4(Class=Class, x=fields)
+  # Replace contents of 'fields' variable with slots of S4 object
+  fields <- as(object, "list")[names(fields)]
 
   # If the object ID was automatically computed and not explicitly provided,
   # move it into the 'fields' list; otherwise, the GeneHive server will
@@ -151,11 +136,7 @@ hiveAdd <- function (
     id.slot <- hiveSlotName(Class, "id")
     fields[[id.slot]] <- objectId(object)
     # Check whether the record already exists
-    if (type == "Group") {
-      object.exists <- fields[[id.slot]] %in% listGroups(con=con)
-    } else {
-      object.exists <- hiveExists(fields[[id.slot]], type, con)
-    }
+    object.exists <- hiveExists(fields[[id.slot]], type, con)
     if (object.exists) {
       # If the record already exists, produce a warning
       if (type == "Entity") {
@@ -167,30 +148,28 @@ hiveAdd <- function (
           paste(type, "record", sQuote(fields[[id.slot]]), "already exists")
         )
       }
-      if (type != "Group") {
-        # If the type is "Entity", remove any key fields
-        # (these may not be updated)
-        if (type == "Entity") {
-          updates <- fields[
-            setdiff(names(fields), hiveKeyFields(fields$.class))
-          ]
-        }
-        # Identify the fields that do not match the existing record
+      # If the type is "Entity", remove any key fields
+      # (these may not be updated)
+      if (type == "Entity") {
         updates <- fields[
-          unlist(
-            lapply(
-              names(fields),
-              function (name) !identical(slot(object, name), fields[[name]])
-            )
-          )
+          setdiff(names(fields), hiveKeyFields(fields$.class))
         ]
-        # If updates were specified, terminate with an error message
-        if (length(updates)) {
-          stop(
-            "Use hiveUpdate() to update fields: ",
-            paste(sQuote(names(updates)), collapse=", ")
+      }
+      # Identify the fields that do not match the existing record
+      updates <- fields[
+        unlist(
+          lapply(
+            names(fields),
+            function (name) !identical(slot(object, name), fields[[name]])
           )
-        }
+        )
+      ]
+      # If updates were specified, terminate with an error message
+      if (length(updates)) {
+        stop(
+          "Use hiveUpdate() to update fields: ",
+          paste(sQuote(names(updates)), collapse=", ")
+        )
       }
       result <- object
     }
@@ -232,7 +211,7 @@ hiveAdd <- function (
 #' @rdname hiveBase
 hiveDelete <- function (
   con=hiveConnection(), type=c("Entity", "EntityClass", "Group"),
-  ..., verbose=getOption("GeneHive.verbose")
+  id, verbose=getOption("GeneHive.verbose")
 )
 {
   # Check arguments for errors
@@ -240,76 +219,59 @@ hiveDelete <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
+  if (missing(id) || length(id) != 1) {
+    stop("Argument 'id' must be a vector of length 1")
+  }
+  id <- as.character(id)
   if (!(is.logical(verbose) && length(verbose) == 1)) {
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  Class <- hiveS4Class(type, ...)
-
-  # Extract the '...' argument to a named list
-  fields <- list(...)
-
-  # Ensure that an ID was provided for the object
-  id.slot <- hiveSlotName(Class, "id")
-  if (length(fields[[id.slot]]) == 0) {
-    stop(
-      "The ", sQuote(id.slot), " argument is required to delete a ",
-      type, " record"
-    )
-  } else {
-    # Get the record if it exists; if it does not exist, exit with an error
-    if (type == "Group") {
-      object <- hiveGroup(name=fields[[id.slot]])
-      object.exists <- objectId(object) %in% hiveList("Group", con=con)
+  # Get the record if it exists; if it does not exist, exit with an error
+  object <- try(hiveGet(type=type, id=id, con=con), silent=TRUE)
+  object.exists <- !inherits(object, "try-error")
+  if (!object.exists) {
+    if (type == "Entity") {
+      stop(type, " record ", id, " does not exist")
     } else {
-      object <- try(
-        do.call(hiveGet, c(type=type, fields[id.slot], con=con)), silent=TRUE
-      )
-      object.exists <- !inherits(object, "try-error")
+      stop(type, " record ", sQuote(id), " does not exist")
     }
-    if (!object.exists) {
-      if (type == "Entity") {
-        stop(type, " record ", fields[[id.slot]], " does not exist")
-      } else {
-        stop(type, " record ", sQuote(fields[[id.slot]]), " does not exist")
-      }
-    }
-    # Submit a DELETE request and stop if an error is returned
-    response <- stopIfHiveError(
-      httpRequest(
-        url=hiveURL(hiveApp(type), fields[[id.slot]]), method="DELETE", curl=con
-      )
-    )
-    if (is.list(response)) {
-      # Convert the list to a logical vector
-      # (there is only one element, 'success', in the result)
-      response <- unname(unlist(response))
-    } else {
-      # When deleting a Group, 200 HTTP status code is returned with message:
-      #   group: groupname successfully deleted -
-      #          lets hope you didnt break something
-      # so this line sets the result to TRUE as it would be for
-      # type == "Entity" or type == "EntityClass"
-      response <- TRUE
-    }
-    # Return the response
-    if (verbose) {
-      if (type == "Entity") {
-        cat(object@.class, "record", as.character(objectId(object)))
-      } else {
-        cat(type, "record", sQuote(objectId(object)))
-      }
-      cat(" was successfully deleted.\n")
-    }
-    invisible(response)
   }
+  # Submit a DELETE request and stop if an error is returned
+  response <- stopIfHiveError(
+    httpRequest(
+      url=hiveURL(hiveApp(type), id), method="DELETE", curl=con
+    )
+  )
+  if (is.list(response)) {
+    # Convert the list to a logical vector
+    # (there is only one element, 'success', in the result)
+    response <- unname(unlist(response))
+  } else {
+    # When deleting a Group, 200 HTTP status code is returned with message:
+    #   group: groupname successfully deleted -
+    #          lets hope you didnt break something
+    # so this line sets the result to TRUE as it would be for
+    # type == "Entity" or type == "EntityClass"
+    response <- TRUE
+  }
+  # Return the response
+  if (verbose) {
+    if (type == "Entity") {
+      cat(object@.class, "record", as.character(objectId(object)))
+    } else {
+      cat(type, "record", sQuote(objectId(object)))
+    }
+    cat(" was successfully deleted.\n")
+  }
+  invisible(response)
 }
 
 #' @rdname hiveBase
 hiveGet <- function (
   con=hiveConnection(),
   type=c("Entity", "EntityClass", "User", "WorkFileProperties"),
-  ...
+  id
 )
 {
   # Check arguments for errors
@@ -317,27 +279,14 @@ hiveGet <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
-
-  Class <- hiveS4Class(type, ...)
-
-  # Extract the '...' argument to a named list
-  fields <- list(...)
-
-  # Ensure that an ID was provided for the object
-  id.slot <- hiveSlotName(Class, "id")
-  fields[[id.slot]] <- as.character(fields[[id.slot]])
-  if (length(fields[[id.slot]]) == 0) {
-    stop(
-      "The ", sQuote(id.slot), " argument is required to retrieve a ",
-      type, " object"
-    )
+  if (missing(id) || length(id) != 1) {
+    stop("Argument 'id' must be a vector of length 1")
   }
+  id <- as.character(id)
 
   # Submit a GET request and stop if an error is returned
   response <- stopIfHiveError(
-    httpRequest(
-      url=hiveURL(hiveApp(type), fields[[id.slot]]), method="GET", curl=con
-    )
+    httpRequest(url=hiveURL(hiveApp(type), id), method="GET", curl=con)
   )
 
   # If retrieving an Entity, refresh the local S4 class definition
@@ -351,7 +300,7 @@ hiveGet <- function (
 #' @rdname hiveBase
 hiveUpdate <- function (
   con, type=c("Entity", "User", "WorkFileProperties"),
-  ..., append=TRUE, verbose=getOption("GeneHive.verbose")
+  fields, append=TRUE, verbose=getOption("GeneHive.verbose")
 )
 {
   # Check arguments for errors
@@ -359,6 +308,9 @@ hiveUpdate <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
+  if (!(is.list(fields) && length(fields))) {
+    stop("Argument 'fields' must be a list of nonzero length")
+  }
   if (!(is.logical(append) && length(append) == 1)) {
     stop("Argument 'append' must be a logical vector of length 1")
   }
@@ -366,8 +318,6 @@ hiveUpdate <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  # Extract the '...' argument to a named list
-  fields <- list(...)
   # Define the slot that holds the ID of the object
   Class <- hiveS4Class(type)
   id.slot <- hiveSlotName(Class, "id")
@@ -397,46 +347,21 @@ hiveUpdate <- function (
   }
   slots <- getSlots(Class)
 
-  # Check to make sure that the '...' argument is named properly
-  # (This check produces a more informative error message than that returned by
-  # initialize())
-  # Note: allNames is used in the event that '...' contains >= 1 elements,
-  #       all of which are unnamed
+  # Check to make sure that the 'fields' argument is named properly
+  # (This check produces a more informative error message than initialize())
+  # Note: allNames is used in case all elements of 'fields' are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      "All arguments in '...' must be named, ",
+      "All arguments in argument 'fields' must be named, ",
       "and these names must correspond to valid ", Class, " object slots"
     )
   }
-  # Coerce all fields corresponding to S4 object slots to the appropriate class
-  for (i in seq_along(fields)) {
-    target.class <- slots[names(fields)[i]]
-    if (target.class == "UUID") {
-      if (is.character(fields[[i]])) {
-        fields[[i]] <- UUIDparse(fields[[i]])[[1]]
-      } else if (!is(fields[[i]], "UUID")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUID")
-      }
-    } else if (target.class == "UUIDList") {
-      if (is.list(fields[[i]])) {
-        fields[[i]] <- UUIDList(fields[[i]])
-      } else if (!is(fields[[i]], "UUIDList")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUIDList")
-      }
-    } else {
-      fields[[i]] <- as(fields[[i]], target.class)
-    }
-  }
-  # Create an S4 object from the fields, performing a recursive check to ensure
-  # that all of the data types, etc., are correct
+
+  # Convert list of arguments to S4 object to ensure all arguments are valid
   # Note: suppressWarnings() is used because a call to "new" without all key
-  #       fields will produce a warning
-  suppressWarnings(
-    validObject(
-      updates <- do.call(new, c(Class=Class, fields)), complete=TRUE
-    )
-  )
-  # Convert the S4 object to a list of only those positions that were updated
+  # fields will produce a warning
+  suppressWarnings(updates <- listToHiveS4(Class=Class, x=fields))
+  # Convert the S4 object to a list of only those fields that were provided
   updates <- as(updates, "list")[setdiff(names(fields), id.slot)]
 
   # If type is 'Entity', issue a warning if an attempt was made to update any
@@ -520,7 +445,7 @@ hiveUpdate <- function (
       # If group names were provided, check to make sure that they exist
       if (!is.null(updates$groups)) {
         valid.groups <- sapply(
-          is.element(fields$groups, listGroups(con=con)), isTRUE
+          is.element(fields$groups, listGroups(con=con)$name), isTRUE
         )
         if (any(!valid.groups)) {
           stop(
@@ -602,7 +527,7 @@ hiveUpdate <- function (
 #' @rdname hiveBase
 hiveList <- function (
   con, type=c("Entity", "EntityClass", "Group", "User", "WorkFileProperties"),
-  ..., simplify=TRUE
+  fields=list(), simplify=TRUE
 )
 {
   # Check arguments for errors
@@ -610,64 +535,39 @@ hiveList <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
+  if (!missing(fields)) {
+    if (!is.list(fields)) stop("Argument 'fields' must be a list")
+  }
   if (!(is.logical(simplify) && length(simplify) == 1)) {
     stop("Argument 'simplify' must be a logical vector of length 1")
   }
 
   # Determine the S4 object class of the output,
   # and if adding an Entity, stop if an Entity class was not specified
-  Class <- hiveS4Class(type, ...)
+  Class <- do.call(hiveS4Class, args=c(type=type, fields))
   if (Class == "hiveEntity") {
     stop(
       "When listing Entity records, ",
-      "'...' must contain a valid '.class' argument"
+      "argument 'fields' must contain a valid '.class' argument"
     )
   }
-  # Extract the '...' argument to a named list
-  fields <- list(...)
   # If listing Entities, refresh the local S4 class definition
   if (type == "Entity") refreshEntityS4Class(fields$.class, verbose=FALSE)
   slots <- getSlots(Class)
 
-  # Check to make sure that the '...' argument is named properly
-  # (This check produces a more informative error message than that returned by
-  # initialize())
-  # Note: allNames is used in the event that '...' contains >= 1 elements,
-  #       all of which are unnamed
+  # Check to make sure that the 'fields' argument is named properly
+  # (This check produces a more informative error message than initialize())
+  # Note: allNames is used in case all elements of 'fields' are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      "All arguments in '...' must be named, ",
+      "All arguments in 'fields' must be named, ",
       "and these names must correspond to valid", Class, "object slots"
     )
   }
-  # Coerce all fields corresponding to S4 object slots to the appropriate class
-  for (i in seq_along(fields)) {
-    target.class <- slots[names(fields)[i]]
-    if (target.class == "UUID") {
-      if (is.character(fields[[i]])) {
-        fields[[i]] <- UUIDparse(fields[[i]])[[1]]
-      } else if (!is(fields[[i]], "UUID")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUID")
-      }
-    } else if (target.class == "UUIDList") {
-      if (is.list(fields[[i]])) {
-        fields[[i]] <- UUIDList(fields[[i]])
-      } else if (!is(fields[[i]], "UUIDList")) {
-        stop("Argument ", names(fields)[i], " cannot be coerced to a UUIDList")
-      }
-    } else {
-      fields[[i]] <- as(fields[[i]], target.class)
-    }
-  }
-  # Create an S4 object from the fields, performing a recursive check to ensure
-  # that all of the data types, etc., are correct
+  # Convert list of arguments to S4 object to ensure all arguments are valid
   # Note: suppressWarnings() is used because a call to "new" without all key
   # fields will produce a warning
-  suppressWarnings(
-    validObject(
-      parameters <- do.call(new, c(Class=Class, fields)), complete=TRUE
-    )
-  )
+  suppressWarnings(parameters <- listToHiveS4(Class=Class, x=fields))
   # Convert the S4 object to a list of only the parameters that were provided
   parameters <- as(parameters, "list")[names(fields)]
 

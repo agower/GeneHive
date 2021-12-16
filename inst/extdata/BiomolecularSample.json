@@ -1,0 +1,20 @@
+{
+  "name":"BiomolecularSample",
+  "description": "Information about a biomolecular sample",
+  "variables": {
+    "sample_id": {
+      "name": "ID used to refer to the sample",
+      "category": "key",
+      "type": "T"
+    },
+    "sample_type": {
+      "name": "",
+      "type": "C",
+      "codes": [
+        {"DNA": ""},
+        {"protein": ""},
+        {"RNA": ""}
+      ]
+    }
+  }
+}

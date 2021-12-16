@@ -31,8 +31,6 @@
 #' @description
 #' This S4 class is a container for a \code{cURL} handle that allows connection
 #' to a GeneHive instance.
-#' @slot .Data
-#' A \code{\linkS4class{CURLHandle}} object.
 #' @section Extends:
 #' Directly extends class \code{\linkS4class{CURLHandle}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
@@ -122,6 +120,22 @@ hiveConnection <- function (
   # Return the hiveConnection object
   con
 }
+
+#' @export hiveDate
+#' @rdname hiveDate-class
+#' @title Class to contain a time/date stamp
+#' @description
+#' This S4 class is a container for a time/date stamp in a GeneHive record.
+#' @section Extends:
+#' Directly extends class \code{\link{POSIXct}}.
+#' @author Adam C. Gower \email{agower@@bu.edu}
+
+hiveDate <- setClass(
+  "hiveDate",
+  prototype = NA_integer_,
+  contains = "POSIXct",
+  sealed = TRUE
+)
 
 #' @export hivePermissions
 #' @rdname hivePermissions-class
@@ -254,7 +268,7 @@ hivePermissions <- function (...)
 #' Functions for working with User records are described in \code{\link{Users}}.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
-hiveUser <- setClass(
+setClass(
   "hiveUser",
   slots = c(
     username           = "character",
@@ -266,8 +280,8 @@ hiveUser <- setClass(
     email              = "character",
     firstName          = "character",
     lastName           = "character",
-    dateJoined         = "character",
-    lastLogin          = "character",
+    dateJoined         = "hiveDate",
+    lastLogin          = "hiveDate",
     untrashedFileUsage = "numeric",
     token              = "character",
     active             = "logical"
@@ -282,8 +296,8 @@ hiveUser <- setClass(
     email              = "",
     firstName          = "",
     lastName           = "",
-    dateJoined         = "",
-    lastLogin          = "",
+    dateJoined         = new("hiveDate"),
+    lastLogin          = new("hiveDate"),
     untrashedFileUsage = NA_real_,
     token              = "",
     active             = FALSE
@@ -291,6 +305,12 @@ hiveUser <- setClass(
 )
 setIs("hiveUser", "S4")
 sealClass("hiveUser", where=.GlobalEnv)
+
+#' @rdname hiveUser-class
+#' @param \dots
+#' Arguments containing user information to be used to populate slots of output
+
+hiveUser <- function (...) listToHiveS4(Class="hiveUser", x=list(...))
 
 #' @export hiveUserList
 #' @rdname hiveUserList-class
@@ -472,7 +492,7 @@ hiveWorkFileProperties <- setClass(
     fileType             = "character",
     isTrashed            = "logical",
     isTransient          = "logical",
-    creationDatetime     = "character",
+    creationDatetime     = "hiveDate",
     length               = "numeric",
     token                = "character",
     permissions          = "hivePermissions"
@@ -489,7 +509,7 @@ hiveWorkFileProperties <- setClass(
     fileType             = "",
     isTrashed            = FALSE,
     isTransient          = FALSE,
-    creationDatetime     = "",
+    creationDatetime     = new("hiveDate"),
     length               = 0,
     token                = "",
     permissions          = new("hivePermissions")
@@ -566,7 +586,7 @@ hiveWorkFileIDList <- function (listData=list())
 #' or \code{'W'} (WorkFile).
 #' @slot codes
 #' A character vector specifying the allowed values that the variable may take
-#' (if \code{type} is \code{'C'}).
+#' (if \code{type} is \code{'C'}), named with the description of each code.
 #' Defaults to an empty vector.
 #' @slot entity_class_name
 #' A character string specifying the name of the EntityClass that the
@@ -732,8 +752,8 @@ hiveEntityClass <- setClass(
     owner          = "character",
     group          = "character",
     permissions    = "hivePermissions",
-    .creation_date = "character",
-    .updated       = "character"
+    .creation_date = "hiveDate",
+    .updated       = "hiveDate"
   ),
   prototype = prototype(
     name           = "",
@@ -743,8 +763,8 @@ hiveEntityClass <- setClass(
     owner          = "",
     group          = "",
     permissions    = new("hivePermissions"),
-    .creation_date = "",
-    .updated       = ""
+    .creation_date = new("hiveDate"),
+    .updated       = new("hiveDate")
   )
 )
 setIs("hiveEntityClass", "S4")
@@ -873,8 +893,8 @@ hiveEntity <- setClass(
     .creator         = "character",
     .owner           = "character",
     .group           = "character",
-    .creation_date   = "character",
-    .updated         = "character",
+    .creation_date   = "hiveDate",
+    .updated         = "hiveDate",
     .permissions     = "hivePermissions",
     .workfiles       = "integer"
   ),
@@ -885,8 +905,8 @@ hiveEntity <- setClass(
     .creator         = "",
     .owner           = "",
     .group           = "",
-    .creation_date   = "",
-    .updated         = "",
+    .creation_date   = new("hiveDate"),
+    .updated         = new("hiveDate"),
     .permissions     = new("hivePermissions"),
     .workfiles       = integer(0)
   ),
@@ -1016,17 +1036,17 @@ hiveWeightedFeatureSetEntity <- setClass(
   "hiveWeightedFeatureSetEntity", contains="hiveEntity"
 )
 
-hiveEntityAnnotationEntity <- setClass(
-  "hiveEntityAnnotationEntity", contains="hiveEntity"
+hiveBiomolecularSampleEntity <- setClass(
+  "hiveEntityBiomolecularSampleEntity", contains="hiveEntity"
+)
+hiveInstrumentEntity <- setClass(
+  "hiveInstrumentEntity", contains="hiveEntity"
 )
 hiveMirrorEntity <- setClass(
   "hiveMirrorEntity", contains="hiveEntity"
 )
 hivePackageEntity <- setClass(
   "hivePackageEntity", contains="hiveEntity"
-)
-hivePlatformEntity <- setClass(
-  "hivePlatformEntity", contains="hiveEntity"
 )
 hivePublicationEntity <- setClass(
   "hivePublicationEntity", contains="hiveEntity"

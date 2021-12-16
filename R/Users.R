@@ -85,7 +85,9 @@ addUser <- function (
       )
     }
   }
-  hiveAdd(con, type="User", username=username, ..., verbose=verbose)
+  hiveAdd(
+    con, type="User", fields=list(username=username, ...), verbose=verbose
+  )
 }
 
 #' @export
@@ -101,7 +103,7 @@ getUser <- function (username, con=hiveConnection())
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  hiveGet(con, type="User", username=username)
+  hiveGet(con, type="User", id=username)
 }
 
 #' @export
@@ -131,7 +133,7 @@ updateUser <- function (
       stop("The 'superuser' status of User 'root' may not be changed.")
     }
   }
-  hiveUpdate(con, type="User", username=username, ..., verbose=verbose)
+  hiveUpdate(con, type="User", list(username=username, ...), verbose=verbose)
 }
 
 #' @export
@@ -147,6 +149,6 @@ listUsers <- function (con=hiveConnection(), active=TRUE, simplify=TRUE)
   }
 
   arglist <- list(con=con, type="User", simplify=simplify)
-  if (is.na(active)) arglist$active <- active
+  if (is.na(active)) arglist$fields <- list(active = active)
   do.call(hiveList, args=arglist)
 }

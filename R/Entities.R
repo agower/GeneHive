@@ -72,8 +72,9 @@ addEntity <- function (
   # This needs to include a check that any key fields are included
   # (or this check could be placed in hiveAdd(), but only Entities need it)
   hiveAdd(
-    con, type="Entity", .class=.class, ...,
-    .permissions=.permissions, verbose=verbose
+    con, type="Entity",
+    fields=list(.class=.class, ..., .permissions=.permissions),
+    verbose=verbose
   )
 }
 
@@ -100,7 +101,7 @@ deleteEntity <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  hiveDelete(con, type="Entity", .entity_id=.entity_id, verbose=verbose)
+  hiveDelete(con, type="Entity", id=.entity_id, verbose=verbose)
 }
 
 #' @export
@@ -120,7 +121,7 @@ getEntity <- function (.entity_id, con=hiveConnection())
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  hiveGet(con=con, .entity_id=.entity_id)
+  hiveGet(con=con, id=.entity_id)
 }
 
 #' @export
@@ -145,7 +146,9 @@ updateEntity <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  hiveUpdate(con, type="Entity", .entity_id=.entity_id, ..., verbose=verbose)
+  hiveUpdate(
+    con, type="Entity", fields=list(.entity_id=.entity_id, ...), verbose=verbose
+  )
 }
 
 #' @export
@@ -161,6 +164,8 @@ listEntities <- function (.class, ..., con=hiveConnection())
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  result <- hiveList(con, type="Entity", .class=.class, simplify=FALSE, ...)
+  result <- hiveList(
+    con, type="Entity", fields=list(.class=.class, ...), simplify=FALSE
+  )
   hiveEntityList(listData=result@listData)
 }

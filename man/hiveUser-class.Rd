@@ -5,6 +5,12 @@
 \alias{hiveUser-class}
 \alias{hiveUser}
 \title{Class to contain data about a User}
+\usage{
+hiveUser(...)
+}
+\arguments{
+\item{\dots}{Arguments containing user information to be used to populate slots of output}
+}
 \description{
 This class is the S4 representation of the User record type.
 It is a container for data about a given user.
