@@ -32,7 +32,8 @@
 #' \itemize{
 #'   \item{
 #'     If the S4 class definition is successfully set or refreshed, the
-#'     class constructor function (invisibly).
+#'     corresponding hiveEntityClass S4 object containing the Entity class
+#'     definition (invisibly).
 #'   }
 #'   \item{
 #'     If the S4 class definition exists in two or more namespaces (not
@@ -83,7 +84,7 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
       )
     }
   }
-  remote.classdef <- getEntityClass(class)
+  entityClassDef <- getEntityClass(class)
   if (length(Class.envs) == 0) {
     # If it is undefined, set the S4 class definition in .GlobalEnv
     Class.namespace <- .GlobalEnv
@@ -95,14 +96,9 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
         )
       )
     }
-    constructor <- setEntityS4Class(remote.classdef, where=Class.namespace)
+    setEntityS4Class(entityClassDef, where=Class.namespace)
   } else {
     Class.namespace <- Class.envs[[1]]
-### getSlots(remote.classdef) doesn't make any sense - why did I write this?
-### getSlots() only works with class names or classRepresentation objects
-#    classDef.changed <- !identical(
-#      getSlots(getClass(Class, Class.namespace)), getSlots(remote.classdef)
-#    )
     # For now, just force it to update the S4 class definition each time
     classDef.changed <- TRUE
     if (classDef.changed) {
@@ -128,7 +124,7 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
           args=list(sym=classMetaName(Class), env=Class.namespace)
         )
         # Reset the S4 class definition
-        constructor <- setEntityS4Class(remote.classdef, where=Class.namespace)
+        setEntityS4Class(entityClassDef, where=Class.namespace)
       }
     } else {
       if (verbose) {
@@ -138,8 +134,8 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
   }
   # Lock the S4 class definition
   lockBinding(classMetaName(Class), Class.namespace)
-  # Return the constructor function, invisibly
-  invisible(constructor)
+  # Return the hiveEntityClass S4 object, invisibly
+  invisible(entityClassDef)
 }
 
 #' @export
@@ -154,9 +150,10 @@ refreshEntityS4Class <- function (class, verbose=getOption("GeneHive.verbose"))
 #' @param where
 #' An environment in which to create the S4 class definition if needed
 #' @return
-#' The function calls \link{setClass} to create the S4 class definition within
-#' its namespace, or, if it does not already exist, to create the S4 class
-#' definition within the environment specified in argument \code{where}.
+#' The function calls \code{\link{setClass}} to create the S4 class definition
+#' within its namespace, or, if it does not already exist, to create the S4
+#' class definition within the environment specified in argument \code{where}.
+#' The constructor function created by \code{setClass} is returned, invisibly.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 setEntityS4Class <- function (entityClassDef, where=.GlobalEnv)
@@ -210,6 +207,6 @@ setEntityS4Class <- function (entityClassDef, where=.GlobalEnv)
   }
   setClass.arglist$prototype <- do.call(prototype, args=prototype.arglist)
 
-  # Create the S4 class definition
-  do.call(setClass, args=setClass.arglist)
+  # Create the S4 class definition and invisibly return the constructor function
+  invisible(do.call(setClass, args=setClass.arglist))
 }

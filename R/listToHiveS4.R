@@ -19,24 +19,26 @@ listToHiveS4 <- function (Class, x)
   slots <- getSlots(Class)
   for (slotName in names(x)) {
     toClass <- slots[slotName]
-    if (toClass == "UUID") {
-      if (is.character(x[[slotName]])) {
+    if (!is(x[[slotName]], toClass)) {
+      coerceMethodExists <- hasMethod(
+        "coerce", signature(from=class(x[[slotName]]), to=toClass)
+      )
+      if (coerceMethodExists) {
+        x[[slotName]] <- as(x[[slotName]], toClass)
+      } else if (toClass == "UUID" && is.character(x[[slotName]])) {
         x[[slotName]] <- UUIDparse(x[[slotName]])[[1]]
-      } else if (!is(x[[slotName]], "UUID")) {
-        stop("Argument ", slotName, " cannot be coerced to a UUID")
-      }
-    } else if (toClass == "UUIDList") {
-      if (is.list(x[[slotName]])) {
+      } else if (toClass == "UUIDList" && is.character(x[[slotName]])) {
+        x[[slotName]] <- UUIDparse(x[[slotName]])
+      } else if (toClass == "UUIDList" && is.list(x[[slotName]])) {
         x[[slotName]] <- UUIDList(x[[slotName]])
-      } else if (!is(x[[slotName]], "UUIDList")) {
-        stop("Argument ", slotName, " cannot be coerced to a UUIDList")
-      }
-    } else {
-      if (toClass == "factor") {
+      } else if (toClass == "factor") {
         # There is no S4 method for coerce() from 'character' to 'factor'
         x[[slotName]] <- as.factor(x[[slotName]])
       } else {
-        x[[slotName]] <- as(x[[slotName]], toClass)
+        stop(
+          "Argument ", sQuote(slotName),
+          " cannot be coerced to class ", sQuote(toClass)
+        )
       }
     }
   }

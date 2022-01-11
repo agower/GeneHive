@@ -13,7 +13,16 @@
 \item{\dots}{Parameters used to populate the slots of \code{.Object}}
 }
 \value{
-An initialized \code{\linkS4class{hiveEntity}} object.
+\itemize{
+  \item{
+    If any non-array variables in \code{.Object} are of length > 1,
+    the function terminates with an error.
+  }
+  \item{
+    Otherwise, an initialized \code{\linkS4class{hiveEntity}} object
+    is returned.
+  }
+}
 }
 \description{
 The \code{hiveEntity}-specific method performs the following tasks:
@@ -23,7 +32,7 @@ The \code{hiveEntity}-specific method performs the following tasks:
     argument
   }
   \item{
-    Computes the \code{.entity_id} slot from the key fields
+    Computes the \code{.entity_id} slot from the key fields (if any)
   }
   \item{
     If the key fields are empty,

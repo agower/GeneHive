@@ -12,9 +12,10 @@ setEntityS4Class(entityClassDef, where = .GlobalEnv)
 \item{where}{An environment in which to create the S4 class definition if needed}
 }
 \value{
-The function calls \link{setClass} to create the S4 class definition within
-its namespace, or, if it does not already exist, to create the S4 class
-definition within the environment specified in argument \code{where}.
+The function calls \code{\link{setClass}} to create the S4 class definition
+within its namespace, or, if it does not already exist, to create the S4
+class definition within the environment specified in argument \code{where}.
+The constructor function created by \code{setClass} is returned, invisibly.
 }
 \description{
 This function creates a local S4 class definition corresponding to a given

@@ -15,7 +15,8 @@ refreshEntityS4Class(class, verbose = getOption("GeneHive.verbose"))
 \itemize{
   \item{
     If the S4 class definition is successfully set or refreshed, the
-    class constructor function (invisibly).
+    corresponding hiveEntityClass S4 object containing the Entity class
+    definition (invisibly).
   }
   \item{
     If the S4 class definition exists in two or more namespaces (not

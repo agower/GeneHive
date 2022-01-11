@@ -599,7 +599,7 @@ setMethod(
 #'     argument
 #'   }
 #'   \item{
-#'     Computes the \code{.entity_id} slot from the key fields
+#'     Computes the \code{.entity_id} slot from the key fields (if any)
 #'   }
 #'   \item{
 #'     If the key fields are empty,
@@ -611,7 +611,16 @@ setMethod(
 #' @param \dots
 #' Parameters used to populate the slots of \code{.Object}
 #' @return
-#' An initialized \code{\linkS4class{hiveEntity}} object.
+#' \itemize{
+#'   \item{
+#'     If any non-array variables in \code{.Object} are of length > 1,
+#'     the function terminates with an error.
+#'   }
+#'   \item{
+#'     Otherwise, an initialized \code{\linkS4class{hiveEntity}} object
+#'     is returned.
+#'   }
+#' }
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 setMethod(
@@ -630,164 +639,179 @@ setMethod(
     # Note: this call will also set the UUID of the object to a nil UUID
     #       (default) if one was not provided
     .Object <- do.call(callNextMethod, args=c(.Object=.Object, dots))
-    # Compute the UUID if one was not provided
-    if (.Object@.class != "Entity" && isNil(objectId(.Object))) {
-      # Extract the keys from the object, if any
-      key.fields <- hiveKeyFields(.Object@.class)
-      if (length(key.fields)) {
-        # Set convenience variables
-        hashing.algorithm <- getOption("GeneHive.hashing.algorithm")
-        digest.args <- list(algo=hashing.algorithm, serialize=FALSE, raw=TRUE)
-        # Convenience function for converting hexadecimal strings
-        # (e.g., hashes) to raw vectors
-        hexToRaw <- function (x) {
-          n <- nchar(x) %/% 2
-          as.raw(as.hexmode(mapply(substr, x, start=2*(1:n)-1, stop=2*(1:n))))
-        }
-
-        # Check whether any of the keys is missing
-        # if so, throw a warning and exit
-        keys.present <- structure(
-          rep(NA, length(key.fields)), names=key.fields
-        )
-        for (key.field in key.fields) {
-          key <- slot(.Object, key.field)
-          if (class(key) == "hiveDate") {
-            keys.present[[key.field]] <- length(key) > 0
-          } else if (class(key) == "hiveWorkFileID") {
-            keys.present[[key.field]] <- nchar(key) > 0
-          } else if (class(key) == "UUID") {
-            keys.present[[key.field]] <- !isNil(key)
-          } else if (extends(class(key), "character")) {
-#           keys.present[[key.field]] <- any(nchar(key) > 0);
-            keys.present[[key.field]] <- length(key) > 0
-          } else {
-            if (any(mapply(extends, class(key), c("numeric", "SimpleList")))) {
-              keys.present[[key.field]] <- length(key) > 0
-            }
-          }
-        }
-        if (any(!keys.present)) {
-          warning(
+    if (.Object@.class != "Entity") {
+      entityClassDef <- getEntityClass(.Object@.class)
+      for (i in seq_along(entityClassDef@variables)) {
+        variable <- entityClassDef@variables[[i]]
+        if (!variable@is_array && length(slot(.Object, variable@name)) > 1) {
+          stop(
             paste(
-              "A UUID cannot be computed for an Entity record of class",
-              sQuote(.Object@.class),
-               "if any of the following key slots are empty:",
-              paste(sQuote(names(which(!keys.present))), collapse=", ")
+              "Variable", sQuote(variable@name), 
+              "of Entity class", sQuote(.Object@.class),
+              "is not an array variable and cannot be of length > 1"
             )
           )
-        } else {
-          # Initialize a list of UUIDs to be computed from each key
-          key.hashes <- list()
+        }
+      }
+      # Compute the UUID if one was not provided
+      if (isNil(objectId(.Object))) {
+        # Extract a vector of key fields, if any, from the EntityClass object
+        key.fields <- sapply(entityClassDef@variables, slot, "name")[
+          which(sapply(entityClassDef@variables, slot, "category") == "key")
+        ]
+        if (length(key.fields)) {
+          # Set convenience variables
+          hashing.algorithm <- getOption("GeneHive.hashing.algorithm")
+          digest.args <- list(algo=hashing.algorithm, serialize=FALSE, raw=TRUE)
+          # Convenience function for converting hexadecimal strings
+          # (e.g., hashes) to raw vectors
+          hexToRaw <- function (x) {
+            n <- nchar(x) %/% 2
+            as.raw(as.hexmode(mapply(substr, x, start=2*(1:n)-1, stop=2*(1:n))))
+          }
+
+          # Check whether any of the keys is missing
+          # if so, throw a warning and exit
+          keys.present <- structure(
+            rep(NA, length(key.fields)), names=key.fields
+          )
           for (key.field in key.fields) {
             key <- slot(.Object, key.field)
-            if (class(key) == "hiveWorkFileID") {
-              key.hashes[[key.field]] <- hexToRaw(
-                getWorkFileProperties(key)@hash
+            keyClass <- class(key)
+            if (keyClass == "hiveDate") {
+              keys.present[[key.field]] <- length(key) > 0
+            } else if (keyClass == "hiveWorkFileID") {
+              keys.present[[key.field]] <- nchar(key) > 0
+            } else if (keyClass == "UUID") {
+              keys.present[[key.field]] <- !isNil(key)
+            } else if (extends(keyClass, "character")) {
+              keys.present[[key.field]] <- length(key) > 0
+            } else {
+              if (any(mapply(extends, keyClass, c("numeric", "SimpleList")))) {
+                keys.present[[key.field]] <- length(key) > 0
+              }
+            }
+          }
+          if (any(!keys.present)) {
+            warning(
+              paste(
+                "A UUID cannot be computed for an Entity record of class",
+                sQuote(.Object@.class),
+                 "if any of the following key slots are empty:",
+                paste(sQuote(names(which(!keys.present))), collapse=", ")
               )
-            } else if (class(key) == "hiveWorkFileIDList") {
-              workFile.hashes <- sapply(
-                lapply(key, getWorkFileProperties), slot, "hash"
-              )
-              key.hashes[[key.field]] <- bitwiseParity(
-                lapply(workFile.hashes, hexToRaw)
-              )
-            } else if (class(key) == "UUID") {
-              key.hashes[[key.field]] <- as.raw(key)
-            } else if (class(key) == "UUIDList") {
-#              key.hashes[[key.field]] <- as.raw(bitwiseParity(key))
-              key.hashes[[key.field]] <- as.raw(
-                bitwiseParity(lapply(key, as.raw))
-              )
-            } else if (extends(class(key), "character")) {
-              key.hashes[[key.field]] <- bitwiseParity(
-                do.call(
-                  lapply, args=c(list(as.character(key), digest), digest.args)
+            )
+          } else {
+            # Initialize a list of UUIDs to be computed from each key
+            key.hashes <- list()
+            for (key.field in key.fields) {
+              key <- slot(.Object, key.field)
+              if (class(key) == "hiveWorkFileID") {
+                key.hashes[[key.field]] <- hexToRaw(
+                  getWorkFileProperties(key)@hash
                 )
-              )
-            } else if (extends(class(key), "numeric")) {
-              if (!is.null(names(key))) {
-                # Convert names of vector to UUIDs if possible;
-                # otherwise, compute UUIDs from names of vector
-#                key.names <- as(names(key), "UUIDList")
-                key.names <- UUIDparse(names(key))
-                if (all(sapply(key.names, isNil))) {
-                  key.names <- do.call(
-                    lapply, args=c(list(names(key), digest), digest.args)
-                  )
-                }
-                # If the vector is named, the names will be used
-                # along with the values (weights) to compute the UUID
-                if (all(is.element(key, c(-1, +1)))) {
-                  # If all elements are weighted equally in one or two
-                  # directions, compute the bitwise (even) parity of:
-                  #   1. bitwise even parity of all elements with weight +1
-                  #   2. bitwise odd parity of all elements with weight -1
-#                  key.hashes[[key.field]] <- UUID()
-                  key.hashes[[key.field]] <- as.raw(UUID())
-                  if (any(key == +1)) {
-                    key.hashes[[key.field]] <- bitwiseParity(
-                      list(
-                        key.hashes[[key.field]],
-                        bitwiseParity(key.names[which(key == +1)], even=TRUE)
-                      )
-                    )
-                  }
-                  if (any(key == -1)) {
-                    key.hashes[[key.field]] <- bitwiseParity(
-                      list(
-                        key.hashes[[key.field]],
-                        bitwiseParity(key.names[which(key == -1)], even=FALSE)
-                      )
-                    )
-                  }
-                } else {
-                  # Otherwise, compute bitwise (even) parity of all elements
-                  # and weights
-                  # Note: the weights are coerced to character before computing
-                  #       the UUID; this is because it will be converted to
-                  #       character (as JSON) during API call
-                  key.hashes[[key.field]] <- bitwiseParity(
-                    c(
-                      key.names,
-                      do.call(
-                        lapply,
-                        args=c(list(as.character(key), digest), digest.args)
-                      )
-                    )
-                  )
-                }
-              } else {
-                # If the vector is unnamed, the values alone will be used
+              } else if (class(key) == "hiveWorkFileIDList") {
+                workFile.hashes <- sapply(
+                  lapply(key, getWorkFileProperties), slot, "hash"
+                )
+                key.hashes[[key.field]] <- bitwiseParity(
+                  lapply(workFile.hashes, hexToRaw)
+                )
+              } else if (class(key) == "UUID") {
+                key.hashes[[key.field]] <- as.raw(key)
+              } else if (class(key) == "UUIDList") {
+                key.hashes[[key.field]] <- as.raw(
+                  bitwiseParity(lapply(key, as.raw))
+                )
+              } else if (extends(class(key), "character")) {
                 key.hashes[[key.field]] <- bitwiseParity(
                   do.call(
                     lapply, args=c(list(as.character(key), digest), digest.args)
                   )
                 )
+              } else if (extends(class(key), "numeric")) {
+                if (!is.null(names(key))) {
+                  # Convert names of vector to UUIDs if possible;
+                  # otherwise, compute UUIDs from names of vector
+                  key.names <- UUIDparse(names(key))
+                  if (all(sapply(key.names, isNil))) {
+                    key.names <- do.call(
+                      lapply, args=c(list(names(key), digest), digest.args)
+                    )
+                  }
+                  # If the vector is named, the names will be used
+                  # along with the values (weights) to compute the UUID
+                  if (all(is.element(key, c(-1, +1)))) {
+                    # If all elements are weighted equally in one or two
+                    # directions, compute the bitwise (even) parity of:
+                    #   1. bitwise even parity of all elements with weight +1
+                    #   2. bitwise odd parity of all elements with weight -1
+                    key.hashes[[key.field]] <- as.raw(UUID())
+                    if (any(key == +1)) {
+                      key.hashes[[key.field]] <- bitwiseParity(
+                        list(
+                          key.hashes[[key.field]],
+                          bitwiseParity(key.names[which(key == +1)], even=TRUE)
+                        )
+                      )
+                    }
+                    if (any(key == -1)) {
+                      key.hashes[[key.field]] <- bitwiseParity(
+                        list(
+                          key.hashes[[key.field]],
+                          bitwiseParity(key.names[which(key == -1)], even=FALSE)
+                        )
+                      )
+                    }
+                  } else {
+                    # Otherwise, compute bitwise (even) parity of all elements
+                    # and weights
+                    # Note: weights are coerced to character before computing
+                    #       the UUID; this is because it will be converted to
+                    #       character (as JSON) during API call
+                    key.hashes[[key.field]] <- bitwiseParity(
+                      c(
+                        key.names,
+                        do.call(
+                          lapply,
+                          args=c(list(as.character(key), digest), digest.args)
+                        )
+                      )
+                    )
+                  }
+                } else {
+                  # If the vector is unnamed, the values alone will be used
+                  key.hashes[[key.field]] <- bitwiseParity(
+                    do.call(
+                      lapply,
+                      args=c(list(as.character(key), digest), digest.args)
+                    )
+                  )
+                }
+                key.hashes[[key.field]] <- as.raw(key.hashes[[key.field]])
               }
-              key.hashes[[key.field]] <- as.raw(key.hashes[[key.field]])
             }
+            # Compute hash of the Entity class (used to establish a namespace)
+            entity.class.hash <- do.call(
+              digest, args=c(.Object@.class, digest.args)
+            )
+            # Truncate all hashes to 128 bits, in case SHA-1 hashing was used
+            # (i.e., some key hashes may be 128-bit md5sums or UUIDs, and others
+            # may be 160-bit SHA-1 hashes); then, combine key hashes with Entity
+            # class hash by bitwise parity (namespace-based strategy)
+            id <- bitwiseParity(
+              lapply(c(list(entity.class.hash), key.hashes), "[", 1:16)
+            )
+            # Set the UUID variant bits to 1
+            id[9] <- as.raw(bitOr(bitAnd(id[9], 0x3f), 0x80))
+            # Set the UUID version bits to reflect the hashing algorithm used
+            uuid.version <- c(md5=3L, sha1=5L)[hashing.algorithm]
+            id[7] <- as.raw(
+              bitOr(bitAnd(id[7], 0x0f), bitShiftL(uuid.version, 4))
+            )
+            # Convert to UUID and place in .Object
+            objectId(.Object) <- UUID(id)
           }
-          # Compute the hash of the Entity class (used to establish a namespace)
-          entity.class.hash <- do.call(
-            digest, args=c(.Object@.class, digest.args)
-          )
-          # Truncate all hashes to 128 bits, in case SHA-1 hashing was used
-          # (i.e., some key hashes may be 128-bit md5sums or UUIDs, and others
-          # may be 160-bit SHA-1 hashes); then, combine key hashes with Entity
-          # class hash by bitwise parity (namespace-based strategy)
-          id <- bitwiseParity(
-            lapply(c(list(entity.class.hash), key.hashes), "[", 1:16)
-          )
-          # Set the UUID variant bits to 1
-          id[9] <- as.raw(bitOr(bitAnd(id[9], 0x3f), 0x80))
-          # Set the UUID version bits to reflect the hashing algorithm used
-          uuid.version <- c(md5=3L, sha1=5L)[hashing.algorithm]
-          id[7] <- as.raw(
-            bitOr(bitAnd(id[7], 0x0f), bitShiftL(uuid.version, 4))
-          )
-          # Convert to UUID and place in .Object
-          objectId(.Object) <- UUID(id)
         }
       }
     }
@@ -1048,6 +1072,7 @@ setMethod(
     field.widths <- c(
       Name=max(nchar(sapply(object@variables, slot, "name"))),
       Key=max(nchar(c(TRUE,FALSE))),
+      Array=max(nchar(c(TRUE,FALSE))),
       Type=0
     )
     sprintf.fmt <- setNames(
@@ -1063,6 +1088,7 @@ setMethod(
       cat(
         sprintf(sprintf.fmt["Name"], variable@name),
         sprintf(sprintf.fmt["Key"], isTRUE(variable@category == "key")),
+        sprintf(sprintf.fmt["Array"], variable@is_array),
         sprintf(sprintf.fmt["Type"], variable.types[[variable@type]])
       )
       # Add a qualifier for specific variable types

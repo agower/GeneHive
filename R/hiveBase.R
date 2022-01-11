@@ -18,8 +18,17 @@
 #' A list of arguments specifying the unique identifier field of the record to
 #' be updated (see \code{\link{hiveSlotName}}),
 #' and/or any other fields to add or update or on which to limit a listing.
-#' Note: when adding or listing Entity records,
-#' \code{fields} must always include a \code{.class} argument.
+#' Note:
+#' \itemize{
+#'   \item{
+#'     When limiting a listing, all of the elements of \code{fields} must be of
+#'     length 1.
+#'   }
+#'   \item{
+#'     When adding or listing Entity records, \code{fields} must always include
+#'     a \code{.class} element.
+#'   }
+#' }
 #' @param id
 #' A vector of length 1 specifying the unique identifier field of the record to
 #' be deleted or retrieved
@@ -538,6 +547,10 @@ hiveList <- function (
   if (!missing(fields)) {
     if (!is.list(fields)) stop("Argument 'fields' must be a list")
   }
+  # Only one value may be used to limit a listing
+  if (any(sapply(fields, length) != 1)) {
+    stop("All elements in argument 'fields' must be of length 1")
+  }
   if (!(is.logical(simplify) && length(simplify) == 1)) {
     stop("Argument 'simplify' must be a logical vector of length 1")
   }
@@ -552,7 +565,9 @@ hiveList <- function (
     )
   }
   # If listing Entities, refresh the local S4 class definition
-  if (type == "Entity") refreshEntityS4Class(fields$.class, verbose=FALSE)
+  if (type == "Entity") {
+    entityClassDef <- refreshEntityS4Class(fields$.class, verbose=FALSE)
+  }
   slots <- getSlots(Class)
 
   # Check to make sure that the 'fields' argument is named properly
@@ -560,8 +575,10 @@ hiveList <- function (
   # Note: allNames is used in case all elements of 'fields' are unnamed
   if (any(!is.element(allNames(fields), names(slots)))) {
     stop(
-      "All arguments in 'fields' must be named, ",
-      "and these names must correspond to valid", Class, "object slots"
+      paste(
+        "All arguments in 'fields' must be named,",
+        "and these names must correspond to valid", Class, "object slots"
+      )
     )
   }
   # Convert list of arguments to S4 object to ensure all arguments are valid
@@ -573,6 +590,15 @@ hiveList <- function (
 
   # Submit a GET request and stop if an error is returned
   if (type == "Entity") {
+    # If any of the parameters are array-type and non-empty,
+    # replace them with their first (and only) element
+    # (these should all be of length 1 due to the check made at top of function)
+    for (i in seq_along(entityClassDef@variables)) {
+      variable <- entityClassDef@variables[[i]]
+      if (slot(variable, "is_array") && length(parameters[[variable@name]])) {
+        parameters[[variable@name]] <- parameters[[variable@name]][[1]]
+      }
+    }
     # When hiveList() is called with type "Entity" and any UUID parameters
     # (i.e., to list only those Entities that refer to a given Entity), the
     # suffix ".id" must be added to the name of each UUID parameter.

@@ -53,8 +53,17 @@ defaults to \code{'Entity'}}
 \item{fields}{A list of arguments specifying the unique identifier field of the record to
 be updated (see \code{\link{hiveSlotName}}),
 and/or any other fields to add or update or on which to limit a listing.
-Note: when adding or listing Entity records,
-\code{fields} must always include a \code{.class} argument.}
+Note:
+\itemize{
+  \item{
+    When limiting a listing, all of the elements of \code{fields} must be of
+    length 1.
+  }
+  \item{
+    When adding or listing Entity records, \code{fields} must always include
+    a \code{.class} element.
+  }
+}}
 
 \item{verbose}{A logical value specifying whether messages should be printed}
 
