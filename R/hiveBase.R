@@ -100,22 +100,26 @@ hiveAdd <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
   type <- match.arg(type)
-  if (!(is.list(fields) && length(fields))) {
+  if (missing(fields) || !(is.list(fields) && length(fields))) {
     stop("Argument 'fields' must be a list of nonzero length")
   }
   if (!(is.logical(verbose) && length(verbose) == 1)) {
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
-
-  # Determine the S4 object class of the output,
-  # and if adding an Entity, stop if an Entity class was not specified
-  Class <- do.call(hiveS4Class, args=c(type=type, fields))
-  if (Class == "hiveEntity") {
+  if (type == "Entity" && is.null(fields$.class)) {
     stop(
       "When adding Entity records, ",
-      "argument 'fields' must contain a valid '.class' argument"
+      "argument 'fields' must contain an element named '.class'"
     )
   }
+
+  # Determine the S4 object class of the output
+  if (type == "Entity") {
+    Class <- hiveS4Class(type=type, class=fields$.class)
+  } else {
+    Class <- hiveS4Class(type=type)
+  }
+
   # If adding an Entity, refresh the local S4 class definition
   if (type == "Entity") refreshEntityS4Class(fields$.class, verbose=FALSE)
   slots <- getSlots(Class)
@@ -135,14 +139,19 @@ hiveAdd <- function (
   object <- listToHiveS4(Class=Class, x=fields)
   # Replace contents of 'fields' variable with slots of S4 object
   fields <- as(object, "list")[names(fields)]
+  # Store name of ID slot in convenience variable
+  id.slot <- hiveSlotName(Class, "id")
 
   # If the object ID was automatically computed and not explicitly provided,
   # move it into the 'fields' list; otherwise, the GeneHive server will
   # automatically assign a random (version 4) UUID to the record
   if (type == "Entity" && isNil(objectId(object))) {
     object.exists <- FALSE
+    # If the UUID of the Entity object is nil, remove it;
+    # otherwise, hivePreprocess() will coerce this to an NA value below,
+    # and the server will create an Entity with ID "NA"
+    fields[[id.slot]] <- NULL
   } else {
-    id.slot <- hiveSlotName(Class, "id")
     fields[[id.slot]] <- objectId(object)
     # Check whether the record already exists
     object.exists <- hiveExists(fields[[id.slot]], type, con)
@@ -185,9 +194,9 @@ hiveAdd <- function (
   }
 
   if (!object.exists) {
-    # Ensure that Entity array variables of length 1 are converted to JSON
-    # arrays by coercing to list first
     if (type == "Entity") {
+      # Ensure that Entity array variables of length 1 are converted to JSON
+      # arrays by coercing to list first
       class.definition <- getEntityClass(fields$.class)
       array.variable.ids <- unlist(
         lapply(class.definition@variables, function (x) objectId(x)[x@is_array])
@@ -237,7 +246,7 @@ hiveDelete <- function (
   }
 
   # Get the record if it exists; if it does not exist, exit with an error
-  object <- try(hiveGet(type=type, id=id, con=con), silent=TRUE)
+  object <- try(hiveGet(con=con, type=type, id=id), silent=TRUE)
   object.exists <- !inherits(object, "try-error")
   if (!object.exists) {
     if (type == "Entity") {
@@ -339,7 +348,7 @@ hiveUpdate <- function (
   }
   # Check to see if the record exists; if not, exit with an error
   object <- try(
-    do.call(hiveGet, c(type=type, fields[id.slot], con=con)), silent=TRUE
+    do.call(hiveGet, c(con=con, type=type, id=fields[id.slot])), silent=TRUE
   )
   if (inherits(object, "try-error")) {
     stop(
@@ -350,7 +359,7 @@ hiveUpdate <- function (
   }
 
   if (type == "Entity") {
-    Class <- hiveS4Class(type, .class=object@.class)
+    Class <- hiveS4Class(type, class=object@.class)
     # If updating an Entity, refresh the local S4 class definition
     refreshEntityS4Class(object@.class, verbose=FALSE)
   }
@@ -554,15 +563,18 @@ hiveList <- function (
   if (!(is.logical(simplify) && length(simplify) == 1)) {
     stop("Argument 'simplify' must be a logical vector of length 1")
   }
-
-  # Determine the S4 object class of the output,
-  # and if adding an Entity, stop if an Entity class was not specified
-  Class <- do.call(hiveS4Class, args=c(type=type, fields))
-  if (Class == "hiveEntity") {
+  if (type == "Entity" && is.null(fields$.class)) {
     stop(
       "When listing Entity records, ",
-      "argument 'fields' must contain a valid '.class' argument"
+      "argument 'fields' must contain an element named '.class'"
     )
+  }
+
+  # Determine the S4 object class of the output
+  if (type == "Entity") {
+    Class <- hiveS4Class(type=type, class=fields$.class)
+  } else {
+    Class <- hiveS4Class(type=type)
   }
   # If listing Entities, refresh the local S4 class definition
   if (type == "Entity") {

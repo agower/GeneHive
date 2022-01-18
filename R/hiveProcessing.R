@@ -78,9 +78,9 @@ hivePostprocess <- function (
 
   if (type == "Entity" && length(x)) {
     if (hiveList.call) {
-      Class <- hiveS4Class(type, .class=unique(sapply(x, "[[", "_class")))
+      Class <- hiveS4Class(type, class=unique(sapply(x, "[[", "_class")))
     } else {
-      Class <- hiveS4Class(type, .class=x[["_class"]])
+      Class <- hiveS4Class(type, class=x[["_class"]])
     }
   } else {
     Class <- hiveS4Class(type)

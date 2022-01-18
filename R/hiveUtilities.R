@@ -14,10 +14,9 @@
 #' @param con
 #' A \code{\linkS4class{hiveConnection}} object
 #' @param class
-#' A character string representing an Entity class
-#' @param \dots
-#' Optional arguments; if argument \code{.class} is present,
-#' it will be used to determine S4 class if type = \code{"Entity"}
+#' A character string representing an Entity class;
+#' in function \code{hiveS4Class}, this is an optional argument
+#' that is used to determine S4 class if type = \code{"Entity"}
 #' @param Class
 #' A character string representing an S4 object class
 #' @param attribute
@@ -76,39 +75,16 @@ hiveExists <- function (
 )
 {
   # Check arguments for errors
-  if (missing(id)) stop("Argument 'id' is required")
-  type <- match.arg(type)
-  if (!(is.character(id) && length(id) == 1)) {
-    if (type == "Entity") {
-      if (!is(id, "UUID")) {
-        stop(
-          "When type == ", sQuote(type), ", ",
-          "argument 'id' must be a character vector of length 1 or a UUID"
-        )
-      }
-    } else if (type == "WorkFileProperties") {
-      if (!is(id, "hiveWorkFileID")) {
-        id <- try(as(id, "hiveWorkFileID"), silent=TRUE)
-        if (inherits(id, "try-error")) {
-          stop(
-            "When type == ", sQuote(type), ", ",
-            "argument 'id' must be a hiveWorkFileID object or coercible to one"
-          )
-        }
-      }
-    } else {
-      stop(
-        "When type == ", sQuote(type), ", ",
-        "argument 'id' must be a character vector of length 1"
-      )
-    }
+  if (missing(id) || length(id) != 1) {
+    stop("Argument 'id' must be a vector of length 1")
   }
+  id <- as.character(id)
+  type <- match.arg(type)
   if (!is(con, "hiveConnection")) {
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  arglist <- list(con=con, type=type)
-  arglist[[hiveSlotName(hiveS4Class(type), "id")]] <- id
+  arglist <- list(con=con, type=type, id=id)
   get.result <- try(do.call(hiveGet, args=arglist), silent=TRUE)
   !inherits(get.result, "try-error")
 }
@@ -172,20 +148,27 @@ hiveLabelFields <- function (class, con=hiveConnection())
 #' @export
 #' @rdname hiveUtilities
 hiveS4Class <- function (
-  type=c("Entity", "EntityClass", "Group", "User", "WorkFileProperties"), ...
+  type=c("Entity", "EntityClass", "Group", "User", "WorkFileProperties"),
+  class
 )
 {
   # Check arguments for errors
   type <- match.arg(type)
 
   if (type != "Entity") {
+    if (!missing(class)) {
+      warning(
+        paste(
+          "Argument 'class' is ignored when argument 'type' is:", sQuote(type)
+        )
+      )
+    }
     paste0("hive", type)
   } else {
-    dots <- list(...)
-    if (is.null(dots$.class) || dots$.class == "Entity") {
+    if (missing(class) || class == "Entity") {
       "hiveEntity"
     } else {
-      paste0("hive", dots$.class, "Entity")
+      paste0("hive", class, "Entity")
     }
   }
 }

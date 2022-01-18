@@ -26,7 +26,7 @@ hiveLabelFields(class, con = hiveConnection())
 
 hiveS4Class(
   type = c("Entity", "EntityClass", "Group", "User", "WorkFileProperties"),
-  ...
+  class
 )
 
 hiveSlotName(
@@ -43,10 +43,9 @@ defaults to \code{"Entity"}}
 
 \item{con}{A \code{\linkS4class{hiveConnection}} object}
 
-\item{class}{A character string representing an Entity class}
-
-\item{\dots}{Optional arguments; if argument \code{.class} is present,
-it will be used to determine S4 class if type = \code{"Entity"}}
+\item{class}{A character string representing an Entity class;
+in function \code{hiveS4Class}, this is an optional argument
+that is used to determine S4 class if type = \code{"Entity"}}
 
 \item{Class}{A character string representing an S4 object class}
 
