@@ -133,8 +133,10 @@ hivePostprocess <- function (
                 to.class,
                 args = list(
                   listData = mapply(
+                    do.call,
                     getClass(to.class)@prototype@elementType,
-                    record[[slot.name]], SIMPLIFY=FALSE
+                    args=record[[slot.name]],
+                    SIMPLIFY=FALSE
                   )
                 )
               )

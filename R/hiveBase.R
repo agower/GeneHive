@@ -245,16 +245,6 @@ hiveDelete <- function (
     stop("Argument 'verbose' must be a logical vector of length 1")
   }
 
-  # Get the record if it exists; if it does not exist, exit with an error
-  object <- try(hiveGet(con=con, type=type, id=id), silent=TRUE)
-  object.exists <- !inherits(object, "try-error")
-  if (!object.exists) {
-    if (type == "Entity") {
-      stop(type, " record ", id, " does not exist")
-    } else {
-      stop(type, " record ", sQuote(id), " does not exist")
-    }
-  }
   # Submit a DELETE request and stop if an error is returned
   response <- stopIfHiveError(
     httpRequest(
@@ -266,21 +256,17 @@ hiveDelete <- function (
     # (there is only one element, 'success', in the result)
     response <- unname(unlist(response))
   } else {
-    # When deleting a Group, 200 HTTP status code is returned with message:
-    #   group: groupname successfully deleted -
-    #          lets hope you didnt break something
+    # When deleting a Group, 200 HTTP status code is returned
+    # with the partial JSON response string:
+    # {"group": groupname
+    #   {"successfully deleted - lets hope you didnt break something"}
     # so this line sets the result to TRUE as it would be for
     # type == "Entity" or type == "EntityClass"
     response <- TRUE
   }
   # Return the response
   if (verbose) {
-    if (type == "Entity") {
-      cat(object@.class, "record", as.character(objectId(object)))
-    } else {
-      cat(type, "record", sQuote(objectId(object)))
-    }
-    cat(" was successfully deleted.\n")
+    cat(type, "record", sQuote(id), "was successfully deleted.\n")
   }
   invisible(response)
 }
