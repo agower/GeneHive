@@ -13,16 +13,7 @@
 \item{\dots}{Parameters used to populate the slots of \code{.Object}}
 }
 \value{
-\itemize{
-  \item{
-    If any non-array variables in \code{.Object} are of length > 1,
-    the function terminates with an error.
-  }
-  \item{
-    Otherwise, an initialized \code{\linkS4class{hiveEntity}} object
-    is returned.
-  }
-}
+An initialized \code{\linkS4class{hiveEntity}} object.
 }
 \description{
 The \code{hiveEntity}-specific method performs the following tasks:

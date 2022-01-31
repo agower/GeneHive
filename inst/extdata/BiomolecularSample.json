@@ -7,14 +7,22 @@
       "category": "key",
       "type": "T"
     },
+    "source": {
+      "name": "ID of the Entity associated with the source of the sample",
+      "type": "V"
+    },
     "type": {
-      "name": "",
+      "name": "The type of sample",
       "type": "C",
       "codes": [
         {"DNA": ""},
         {"protein": ""},
         {"RNA": ""}
       ]
+    },
+    "LockboxID": {
+      "name": "The ID of the corresponding record in Lockbox",
+      "type": "T"
     }
   }
 }

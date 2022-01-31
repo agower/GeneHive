@@ -611,16 +611,7 @@ setMethod(
 #' @param \dots
 #' Parameters used to populate the slots of \code{.Object}
 #' @return
-#' \itemize{
-#'   \item{
-#'     If any non-array variables in \code{.Object} are of length > 1,
-#'     the function terminates with an error.
-#'   }
-#'   \item{
-#'     Otherwise, an initialized \code{\linkS4class{hiveEntity}} object
-#'     is returned.
-#'   }
-#' }
+#' An initialized \code{\linkS4class{hiveEntity}} object.
 #' @author Adam C. Gower \email{agower@@bu.edu}
 
 setMethod(
@@ -640,25 +631,9 @@ setMethod(
     #       (default) if one was not provided
     .Object <- do.call(callNextMethod, args=c(.Object=.Object, dots))
     if (.Object@.class != "Entity") {
-      entityClassDef <- getEntityClass(.Object@.class)
-      for (i in seq_along(entityClassDef@variables)) {
-        variable <- entityClassDef@variables[[i]]
-        if (!variable@is_array && length(slot(.Object, variable@name)) > 1) {
-          stop(
-            paste(
-              "Variable", sQuote(variable@name), 
-              "of Entity class", sQuote(.Object@.class),
-              "is not an array variable and cannot be of length > 1"
-            )
-          )
-        }
-      }
       # Compute the UUID if one was not provided
       if (isNil(objectId(.Object))) {
-        # Extract a vector of key fields, if any, from the EntityClass object
-        key.fields <- sapply(entityClassDef@variables, slot, "name")[
-          which(sapply(entityClassDef@variables, slot, "category") == "key")
-        ]
+        key.fields <- hiveKeyFields(.Object@.class)
         if (length(key.fields)) {
           # Set convenience variables
           hashing.algorithm <- getOption("GeneHive.hashing.algorithm")
