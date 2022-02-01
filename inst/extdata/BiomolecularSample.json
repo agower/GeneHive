@@ -7,10 +7,6 @@
       "category": "key",
       "type": "T"
     },
-    "source": {
-      "name": "ID of the Entity associated with the source of the sample",
-      "type": "V"
-    },
     "type": {
       "name": "The type of sample",
       "type": "C",
