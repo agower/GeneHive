@@ -118,6 +118,9 @@ hivePostprocess <- function (
       record$.creation_date <- as(record$.creation_date, "hiveDate")
       record$.updated <- as(record$.updated, "hiveDate")
     } else {
+      # Limit record to known slots
+      # (i.e., skip over any new fields that may have been added server-side)
+      record <- record[intersect(names(record), names(slots))]
       # For each remaining field, populate the slot
       for (slot.name in names(record)) {
         to.class <- slots[slot.name]
