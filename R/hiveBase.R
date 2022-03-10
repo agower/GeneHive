@@ -334,7 +334,8 @@ hiveUpdate <- function (
   }
   # Check to see if the record exists; if not, exit with an error
   object <- try(
-    do.call(hiveGet, c(con=con, type=type, id=fields[id.slot])), silent=TRUE
+    do.call(hiveGet, args=list(con=con, type=type, id=fields[[id.slot]])),
+    silent=TRUE
   )
   if (inherits(object, "try-error")) {
     stop(

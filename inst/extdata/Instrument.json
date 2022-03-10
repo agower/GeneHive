@@ -2,7 +2,7 @@
   "name": "Instrument",
   "description": "Description of an instrument",
   "variables": {
-    "instrument_id": {
+    "ID": {
       "name": "Unique ID of the instrument (e.g., serial number)",
       "category": "key",
       "type": "T"
