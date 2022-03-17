@@ -125,7 +125,7 @@ addWorkFile <- function (
     if (!(is.character(group) && length(group) == 1)) {
       stop("Argument 'group' must be a character vector of length 1")
     }
-    if (!is.element(group, listGroups(con))) {
+    if (!is.element(group, listGroups(con)$name)) {
       stop(paste(sQuote(group), "is not a valid Group"))
     }
   }

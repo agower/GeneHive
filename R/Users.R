@@ -75,7 +75,7 @@ addUser <- function (
   # If any of the groups do not exist, exit with an error
   if (!is.null(fields$groups)) {
     valid.groups <- sapply(
-      is.element(fields$groups, listGroups(con=con)), isTRUE
+      is.element(fields$groups, listGroups(con=con)$name), isTRUE
     )
     if (any(!valid.groups)) {
       stop(
