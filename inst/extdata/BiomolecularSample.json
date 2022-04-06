@@ -4,7 +4,6 @@
   "variables": {
     "ID": {
       "name": "Primary ID (i.e., laboratory label) used to refer to the sample",
-      "category": "key",
       "type": "T"
     },
     "type": {

@@ -13,7 +13,6 @@
     },
     "features": {
       "name": "Feature identifiers (e.g., Entrez Gene IDs, Affymetrix probeset IDs)",
-      "category": "key",
       "type": "T",
       "is_array": true
     },

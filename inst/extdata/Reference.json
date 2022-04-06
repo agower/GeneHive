@@ -13,7 +13,6 @@
     },
     "workFiles": {
       "name": "ID(s) of the WorkFile(s) containing the reference (e.g., a 2bit genome file or a collection of FASTA files)",
-      "category": "key",
       "type": "W",
       "is_array": true
     },

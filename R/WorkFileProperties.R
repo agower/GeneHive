@@ -113,10 +113,12 @@ listWorkFileProperties <- function (
     stop("Argument 'con' must be a hiveConnection object")
   }
 
-  arglist <- list(con=con, type="WorkFileProperties", simplify=simplify, ...)
+  arglist <- list(
+    con=con, type="WorkFileProperties", simplify=simplify, fields=list(...)
+  )
   # If isTrashed is set to TRUE or FALSE, limit the result accordingly;
-  # otherwise, return all results regardless of trashed status
-  if (!is.na(isTrashed)) arglist$fields <- list(isTrashed = isTrashed)
+  # otherwise, return all matching results regardless of trashed status
+  if (!is.na(isTrashed)) arglist$fields$isTrashed <- isTrashed
   do.call(hiveList, args=arglist)
 }
 #' @export

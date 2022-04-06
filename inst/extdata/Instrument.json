@@ -4,7 +4,6 @@
   "variables": {
     "ID": {
       "name": "Unique ID of the instrument (e.g., serial number)",
-      "category": "key",
       "type": "T"
     },
     "manufacturer": {

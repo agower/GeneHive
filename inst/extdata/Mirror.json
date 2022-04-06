@@ -4,7 +4,6 @@
   "variables": {
     "url": {
       "name": "The URL that is being mirrored",
-      "category": "key",
       "type": "T"
     },
     "workFile": {

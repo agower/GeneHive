@@ -9,7 +9,6 @@
     },
     "values": {
       "name": "A character array containing two or more features over which the space is defined, or a single regular expression that matches all features in the space",
-      "category": "key",
       "type": "T",
       "is_array": true
     }

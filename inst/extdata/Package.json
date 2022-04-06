@@ -4,12 +4,10 @@
   "variables": {
     "name": {
       "name": "Name of the package (e.g., 'affy', 'Expression Console')",
-      "category": "key",
       "type": "T"
     },
     "version": {
       "name": "Version of the software package used",
-      "category": "key",
       "type": "T"
     }
   }
